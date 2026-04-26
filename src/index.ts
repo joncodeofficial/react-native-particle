@@ -1,5 +1,11 @@
-import { NitroModules } from 'react-native-nitro-modules'
-import type { Particle as ParticleSpec } from './specs/particle.nitro'
+export { ParticleSystem } from './ParticleSystem'
+export type { ParticleSystemProps, PresetName } from './ParticleSystem'
+export type { AdapterProps } from './adapters/types'
+export type { ParticleEngine } from './specs/ParticleEngine.nitro'
 
-export const Particle =
-  NitroModules.createHybridObject<ParticleSpec>('Particle')
+// Adapters — also exported from the main entry for local development.
+// In production (npm install) prefer the subpath imports for tree-shaking:
+//   import { ViewAdapter } from 'react-native-particle/adapters/view'
+export { ViewAdapter } from './adapters/ViewAdapter'
+export { SkiaAdapter } from './adapters/SkiaAdapter'
+export { ReanimatedAdapter } from './adapters/ReanimatedAdapter'

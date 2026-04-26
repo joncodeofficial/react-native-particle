@@ -13,10 +13,10 @@
     "androidCxxLibName": "Particle"
   },
   "autolinking": {
-    "Particle": {
+    "ParticleEngine": {
       "all": {
         "language": "c++",
-        "implementationClassName": "HybridParticle"
+        "implementationClassName": "HybridParticleEngine"
       }
     }
   },
