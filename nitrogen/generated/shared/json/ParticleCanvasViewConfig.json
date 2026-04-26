@@ -1,0 +1,15 @@
+{
+  "uiViewClassName": "ParticleCanvasView",
+  "supportsRawText": false,
+  "bubblingEventTypes": {},
+  "directEventTypes": {},
+  "validAttributes": {
+    "preset": true,
+    "count": true,
+    "emitterX": true,
+    "emitterY": true,
+    "loop": true,
+    "emitInterval": true,
+    "hybridRef": true
+  }
+}

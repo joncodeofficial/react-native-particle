@@ -42,15 +42,18 @@ export function SkiaAdapter({ engine, width, height }: AdapterProps) {
       lastTimeRef.current = time
 
       engine.step(dt)
-      const flat = engine.getParticlesFlat()
+
+      const count = engine.particleCount
+      const flat = new Float32Array(engine.getParticlesFlat(), 0, count * 7)
 
       const parsed: Particle[] = []
-      for (let i = 0; i < flat.length; i += 7) {
+      for (let i = 0; i < count; i++) {
+        const o = i * 7
         parsed.push({
-          x: flat[i]!,
-          y: flat[i + 1]!,
-          r: Math.max((flat[i + 2]!) / 2, 0.5),
-          color: `rgba(${Math.round((flat[i + 3]!) * 255)},${Math.round((flat[i + 4]!) * 255)},${Math.round((flat[i + 5]!) * 255)},${flat[i + 6]})`,
+          x: flat[o]!,
+          y: flat[o + 1]!,
+          r: Math.max((flat[o + 2]!) / 2, 0.5),
+          color: `rgba(${Math.round((flat[o + 3]!) * 255)},${Math.round((flat[o + 4]!) * 255)},${Math.round((flat[o + 5]!) * 255)},${flat[o + 6]})`,
         })
       }
 

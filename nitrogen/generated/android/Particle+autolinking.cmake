@@ -33,9 +33,12 @@ target_sources(
   # Autolinking Setup
   ../nitrogen/generated/android/ParticleOnLoad.cpp
   # Shared Nitrogen C++ sources
+  ../nitrogen/generated/shared/c++/HybridParticleCanvasViewSpec.cpp
+  ../nitrogen/generated/shared/c++/views/HybridParticleCanvasViewComponent.cpp
   ../nitrogen/generated/shared/c++/HybridParticleEngineSpec.cpp
   # Android-specific Nitrogen C++ sources
-  
+  ../nitrogen/generated/android/c++/JHybridParticleCanvasViewSpec.cpp
+  ../nitrogen/generated/android/c++/views/JHybridParticleCanvasViewStateUpdater.cpp
 )
 
 # From node_modules/react-native/ReactAndroid/cmake-utils/folly-flags.cmake

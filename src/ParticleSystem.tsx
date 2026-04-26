@@ -16,6 +16,9 @@ export interface ParticleSystemProps {
   /** Emission Y — defaults to vertical center */
   y?: number
   autoPlay?: boolean
+  /** Re-emit particles continuously at the given interval (ms). */
+  loop?: boolean
+  emitInterval?: number
   /** Pass a specific adapter. Defaults to ViewAdapter (zero dependencies). */
   adapter?: React.ComponentType<AdapterProps>
   onComplete?: () => void
@@ -29,6 +32,8 @@ export function ParticleSystem({
   x,
   y,
   autoPlay = true,
+  loop = false,
+  emitInterval = 200,
   adapter: AdapterComponent = ViewAdapter,
 }: ParticleSystemProps) {
   const { width, height } = useWindowDimensions()
@@ -45,7 +50,15 @@ export function ParticleSystem({
 
     setEngine(e)
 
+    let interval: ReturnType<typeof setInterval> | undefined
+    if (loop) {
+      interval = setInterval(() => {
+        e.emit(x ?? width / 2, y ?? height / 2, count, preset)
+      }, emitInterval)
+    }
+
     return () => {
+      if (interval) clearInterval(interval)
       e.reset()
     }
     // intentional: only re-create the engine when the component remounts (key change)

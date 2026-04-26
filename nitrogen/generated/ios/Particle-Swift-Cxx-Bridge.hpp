@@ -8,13 +8,16 @@
 #pragma once
 
 // Forward declarations of C++ defined types
-
+// Forward declaration of `HybridParticleCanvasViewSpec` to properly resolve imports.
+namespace margelo::nitro::particle { class HybridParticleCanvasViewSpec; }
 
 // Forward declarations of Swift defined types
-
+// Forward declaration of `HybridParticleCanvasViewSpec_cxx` to properly resolve imports.
+namespace Particle { class HybridParticleCanvasViewSpec_cxx; }
 
 // Include C++ defined types
-
+#include "HybridParticleCanvasViewSpec.hpp"
+#include <memory>
 
 /**
  * Contains specialized versions of C++ templated types so they can be accessed from Swift,
@@ -22,6 +25,16 @@
  */
 namespace margelo::nitro::particle::bridge::swift {
 
+  // pragma MARK: std::shared_ptr<HybridParticleCanvasViewSpec>
+  /**
+   * Specialized version of `std::shared_ptr<HybridParticleCanvasViewSpec>`.
+   */
+  using std__shared_ptr_HybridParticleCanvasViewSpec_ = std::shared_ptr<HybridParticleCanvasViewSpec>;
+  std::shared_ptr<HybridParticleCanvasViewSpec> create_std__shared_ptr_HybridParticleCanvasViewSpec_(void* NON_NULL swiftUnsafePointer) noexcept;
+  void* NON_NULL get_std__shared_ptr_HybridParticleCanvasViewSpec_(std__shared_ptr_HybridParticleCanvasViewSpec_ cppType);
   
+  // pragma MARK: std::weak_ptr<HybridParticleCanvasViewSpec>
+  using std__weak_ptr_HybridParticleCanvasViewSpec_ = std::weak_ptr<HybridParticleCanvasViewSpec>;
+  inline std__weak_ptr_HybridParticleCanvasViewSpec_ weakify_std__shared_ptr_HybridParticleCanvasViewSpec_(const std::shared_ptr<HybridParticleCanvasViewSpec>& strong) noexcept { return strong; }
 
 } // namespace margelo::nitro::particle::bridge::swift

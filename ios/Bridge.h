@@ -6,3 +6,5 @@
 //
 
 #pragma once
+
+#import "ParticleEngineCoreBridge.h"

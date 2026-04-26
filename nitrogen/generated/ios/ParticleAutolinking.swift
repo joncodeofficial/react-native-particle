@@ -12,5 +12,15 @@ import NitroModules
 public final class ParticleAutolinking {
   public typealias bridge = margelo.nitro.particle.bridge.swift
 
+  public static func createParticleCanvasView() -> bridge.std__shared_ptr_HybridParticleCanvasViewSpec_ {
+    let hybridObject = HybridParticleCanvasView()
+    return { () -> bridge.std__shared_ptr_HybridParticleCanvasViewSpec_ in
+      let __cxxWrapped = hybridObject.getCxxWrapper()
+      return __cxxWrapped.getCxxPart()
+    }()
+  }
   
+  public static func isParticleCanvasViewRecyclable() -> Bool {
+    return HybridParticleCanvasView.self is any RecyclableView.Type
+  }
 }

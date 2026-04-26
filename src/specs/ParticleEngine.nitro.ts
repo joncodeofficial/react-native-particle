@@ -7,7 +7,7 @@ export interface ParticleEngine extends HybridObject<{ ios: 'c++'; android: 'c++
   reset(): void
   play(): void
   pause(): void
-  getParticlesFlat(): number[]
+  getParticlesFlat(): ArrayBuffer
 
   readonly particleCount: number
   readonly isRunning: boolean

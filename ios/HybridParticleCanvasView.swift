@@ -1,0 +1,146 @@
+import UIKit
+import NitroModules
+
+class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticleCanvasViewSpec {
+
+  // ─── Props ──────────────────────────────────────────────────────────────────
+
+  var preset: String = "fire"
+  var count: Double = 200
+  var emitterX: Double = 0
+  var emitterY: Double = 0
+  var loop: Bool = false
+  var emitInterval: Double = 200
+
+  // ─── Native view ────────────────────────────────────────────────────────────
+
+  private let drawView = ParticleDrawView()
+  var view: UIView { drawView }
+
+  // ─── C++ engine (via Obj-C++ bridge) ────────────────────────────────────────
+
+  private let engine = ParticleEngineCoreBridge()
+  private static let maxParticles: Int32 = 2000
+
+  // ─── Display link ───────────────────────────────────────────────────────────
+
+  private var displayLink: CADisplayLink?
+  private var lastTimestamp: CFTimeInterval = 0
+  private var emitTimer: CFTimeInterval = 0
+  private var initialized = false
+
+  // ─── Setup ──────────────────────────────────────────────────────────────────
+
+  override init() {
+    super.init()
+    drawView.onSizeChange = { [weak self] size in
+      self?.setupEngine(size: size)
+    }
+  }
+
+  private func setupEngine(size: CGSize) {
+    guard size.width > 0, size.height > 0 else { return }
+
+    engine.initialize(
+      withMaxParticles: Int32(HybridParticleCanvasView.maxParticles),
+      width: Float(size.width),
+      height: Float(size.height)
+    )
+
+    let cx = emitterX == 0 ? Float(size.width / 2) : Float(emitterX)
+    let cy = emitterY == 0 ? Float(size.height / 2) : Float(emitterY)
+    engine.emit(atX: cx, y: cy, count: Int32(count), preset: preset)
+    engine.play()
+
+    drawView.engine = engine
+    initialized = true
+    startLoop()
+  }
+
+  private func startLoop() {
+    guard displayLink == nil else { return }
+    let link = CADisplayLink(target: self, selector: #selector(tick(_:)))
+    link.add(to: .main, forMode: .common)
+    displayLink = link
+    lastTimestamp = 0
+    emitTimer = 0
+  }
+
+  private func stopLoop() {
+    displayLink?.invalidate()
+    displayLink = nil
+  }
+
+  @objc private func tick(_ link: CADisplayLink) {
+    let now = link.timestamp
+    let dt = lastTimestamp == 0 ? 0.016 : now - lastTimestamp
+    lastTimestamp = now
+
+    if loop {
+      if (now - emitTimer) * 1000 >= emitInterval {
+        engine.emit(
+          atX: Float(emitterX == 0 ? Double(drawView.bounds.width / 2) : emitterX),
+          y: Float(emitterY == 0 ? Double(drawView.bounds.height / 2) : emitterY),
+          count: Int32(count),
+          preset: preset
+        )
+        emitTimer = now
+      }
+    }
+
+    engine.step(dt)
+    engine.fillParticleData()
+    drawView.particleCount = engine.aliveCount()
+    drawView.setNeedsDisplay()
+  }
+
+  // ─── Lifecycle ──────────────────────────────────────────────────────────────
+
+  deinit {
+    stopLoop()
+  }
+}
+
+// ─── Drawing View ────────────────────────────────────────────────────────────
+
+final class ParticleDrawView: UIView {
+
+  var engine: ParticleEngineCoreBridge?
+  var particleCount: Int32 = 0
+  var onSizeChange: ((CGSize) -> Void)?
+
+  override init(frame: CGRect) {
+    super.init(frame: frame)
+    backgroundColor = .clear
+    isOpaque = false
+  }
+
+  required init?(coder: NSCoder) { fatalError() }
+
+  override func layoutSubviews() {
+    super.layoutSubviews()
+    if bounds.size != .zero {
+      onSizeChange?(bounds.size)
+    }
+  }
+
+  override func draw(_ rect: CGRect) {
+    guard let ctx = UIGraphicsGetCurrentContext(),
+          let ptr = engine?.particleDataPtr(),
+          particleCount > 0 else { return }
+
+    for i in 0..<Int(particleCount) {
+      let o = i * 7
+      let x    = CGFloat(ptr[o])
+      let y    = CGFloat(ptr[o + 1])
+      let size = CGFloat(ptr[o + 2])
+      let r    = CGFloat(ptr[o + 3])
+      let g    = CGFloat(ptr[o + 4])
+      let b    = CGFloat(ptr[o + 5])
+      let a    = CGFloat(ptr[o + 6])
+
+      ctx.setFillColor(red: r, green: g, blue: b, alpha: a)
+      ctx.fillEllipse(in: CGRect(x: x - size / 2, y: y - size / 2, width: size, height: size))
+    }
+  }
+}

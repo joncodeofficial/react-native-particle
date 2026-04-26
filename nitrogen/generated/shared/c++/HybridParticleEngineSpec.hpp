@@ -16,7 +16,7 @@
 
 
 #include <string>
-#include <vector>
+#include <NitroModules/ArrayBuffer.hpp>
 
 namespace margelo::nitro::particle {
 
@@ -56,7 +56,7 @@ namespace margelo::nitro::particle {
       virtual void reset() = 0;
       virtual void play() = 0;
       virtual void pause() = 0;
-      virtual std::vector<double> getParticlesFlat() = 0;
+      virtual std::shared_ptr<ArrayBuffer> getParticlesFlat() = 0;
 
     protected:
       // Hybrid Setup

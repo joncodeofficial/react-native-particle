@@ -8,10 +8,26 @@
 #include "Particle-Swift-Cxx-Bridge.hpp"
 
 // Include C++ implementation defined types
-
+#include "HybridParticleCanvasViewSpecSwift.hpp"
+#include "Particle-Swift-Cxx-Umbrella.hpp"
+#include <NitroModules/NitroDefines.hpp>
 
 namespace margelo::nitro::particle::bridge::swift {
 
-  
+  // pragma MARK: std::shared_ptr<HybridParticleCanvasViewSpec>
+  std::shared_ptr<HybridParticleCanvasViewSpec> create_std__shared_ptr_HybridParticleCanvasViewSpec_(void* NON_NULL swiftUnsafePointer) noexcept {
+    Particle::HybridParticleCanvasViewSpec_cxx swiftPart = Particle::HybridParticleCanvasViewSpec_cxx::fromUnsafe(swiftUnsafePointer);
+    return std::make_shared<margelo::nitro::particle::HybridParticleCanvasViewSpecSwift>(swiftPart);
+  }
+  void* NON_NULL get_std__shared_ptr_HybridParticleCanvasViewSpec_(std__shared_ptr_HybridParticleCanvasViewSpec_ cppType) {
+    std::shared_ptr<margelo::nitro::particle::HybridParticleCanvasViewSpecSwift> swiftWrapper = std::dynamic_pointer_cast<margelo::nitro::particle::HybridParticleCanvasViewSpecSwift>(cppType);
+    #ifdef NITRO_DEBUG
+    if (swiftWrapper == nullptr) [[unlikely]] {
+      throw std::runtime_error("Class \"HybridParticleCanvasViewSpec\" is not implemented in Swift!");
+    }
+    #endif
+    Particle::HybridParticleCanvasViewSpec_cxx& swiftPart = swiftWrapper->getSwiftPart();
+    return swiftPart.toUnsafe();
+  }
 
 } // namespace margelo::nitro::particle::bridge::swift

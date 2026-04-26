@@ -27,18 +27,22 @@ export function ViewAdapter({ engine, width, height }: AdapterProps) {
       lastTimeRef.current = time
 
       engine.step(dt)
-      const flat = engine.getParticlesFlat()
+
+      const count = engine.particleCount
+      const buf = engine.getParticlesFlat()
+      const flat = new Float32Array(buf, 0, count * 7)
 
       const parsed: Particle[] = []
-      for (let i = 0; i < flat.length; i += 7) {
+      for (let i = 0; i < count; i++) {
+        const o = i * 7
         parsed.push({
-          x: flat[i]!,
-          y: flat[i + 1]!,
-          size: flat[i + 2]!,
-          r: flat[i + 3]!,
-          g: flat[i + 4]!,
-          b: flat[i + 5]!,
-          a: flat[i + 6]!,
+          x: flat[o]!,
+          y: flat[o + 1]!,
+          size: flat[o + 2]!,
+          r: flat[o + 3]!,
+          g: flat[o + 4]!,
+          b: flat[o + 5]!,
+          a: flat[o + 6]!,
         })
       }
 

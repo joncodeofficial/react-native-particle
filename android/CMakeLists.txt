@@ -11,6 +11,8 @@ add_compile_options(-DRN_SERIALIZABLE_STATE=1)
 # Define C++ library and add all sources
 add_library(${PACKAGE_NAME} SHARED
 	src/main/cpp/cpp-adapter.cpp
+	src/main/cpp/HybridParticleCanvasView_jni.cpp
+	../cpp/ParticleEngineCore.cpp
 	../cpp/HybridParticleEngine.cpp
 )
 
@@ -24,6 +26,11 @@ include_directories(
 )
 
 find_library(LOG_LIB log)
+
+target_compile_options(${PACKAGE_NAME} PRIVATE
+  -O3
+  -ffast-math
+)
 
 # Link all libraries together
 target_link_libraries(

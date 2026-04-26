@@ -18,6 +18,16 @@
         "language": "c++",
         "implementationClassName": "HybridParticleEngine"
       }
+    },
+    "ParticleCanvasView": {
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridParticleCanvasView"
+      },
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "HybridParticleCanvasView"
+      }
     }
   },
   "ignorePaths": [

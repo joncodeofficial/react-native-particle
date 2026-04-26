@@ -15,7 +15,10 @@
 #include <fbjni/fbjni.h>
 #include <NitroModules/HybridObjectRegistry.hpp>
 
+#include "JHybridParticleCanvasViewSpec.hpp"
+#include "views/JHybridParticleCanvasViewStateUpdater.hpp"
 #include "HybridParticleEngine.hpp"
+#include <NitroModules/DefaultConstructableObject.hpp>
 
 namespace margelo::nitro::particle {
 
@@ -25,14 +28,22 @@ int initialize(JavaVM* vm) {
   });
 }
 
-
+struct JHybridParticleCanvasViewSpecImpl: public jni::JavaClass<JHybridParticleCanvasViewSpecImpl, JHybridParticleCanvasViewSpec::JavaPart> {
+  static constexpr auto kJavaDescriptor = "Lcom/margelo/nitro/particle/HybridParticleCanvasView;";
+  static std::shared_ptr<JHybridParticleCanvasViewSpec> create() {
+    static const auto constructorFn = javaClassStatic()->getConstructor<JHybridParticleCanvasViewSpecImpl::javaobject()>();
+    jni::local_ref<JHybridParticleCanvasViewSpec::JavaPart> javaPart = javaClassStatic()->newObject(constructorFn);
+    return javaPart->getJHybridParticleCanvasViewSpec();
+  }
+};
 
 void registerAllNatives() {
   using namespace margelo::nitro;
   using namespace margelo::nitro::particle;
 
   // Register native JNI methods
-  
+  margelo::nitro::particle::JHybridParticleCanvasViewSpec::CxxPart::registerNatives();
+  margelo::nitro::particle::views::JHybridParticleCanvasViewStateUpdater::registerNatives();
 
   // Register Nitro Hybrid Objects
   HybridObjectRegistry::registerHybridObjectConstructor(
@@ -42,6 +53,12 @@ void registerAllNatives() {
                     "The HybridObject \"HybridParticleEngine\" is not default-constructible! "
                     "Create a public constructor that takes zero arguments to be able to autolink this HybridObject.");
       return std::make_shared<HybridParticleEngine>();
+    }
+  );
+  HybridObjectRegistry::registerHybridObjectConstructor(
+    "ParticleCanvasView",
+    []() -> std::shared_ptr<HybridObject> {
+      return JHybridParticleCanvasViewSpecImpl::create();
     }
   );
 }

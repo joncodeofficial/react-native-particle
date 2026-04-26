@@ -8,10 +8,13 @@
 #pragma once
 
 // Forward declarations of C++ defined types
-
+// Forward declaration of `HybridParticleCanvasViewSpec` to properly resolve imports.
+namespace margelo::nitro::particle { class HybridParticleCanvasViewSpec; }
 
 // Include C++ defined types
-
+#include "HybridParticleCanvasViewSpec.hpp"
+#include <memory>
+#include <string>
 
 // C++ helpers for Swift
 #include "Particle-Swift-Cxx-Bridge.hpp"
@@ -23,7 +26,8 @@
 #include <NitroModules/DateToChronoDate.hpp>
 
 // Forward declarations of Swift defined types
-
+// Forward declaration of `HybridParticleCanvasViewSpec_cxx` to properly resolve imports.
+namespace Particle { class HybridParticleCanvasViewSpec_cxx; }
 
 // Include Swift defined types
 #if __has_include("Particle-Swift.h")

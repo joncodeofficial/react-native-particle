@@ -25,6 +25,10 @@ Pod::Spec.new do |s|
   load 'nitrogen/generated/ios/Particle+autolinking.rb'
   add_nitrogen_files(s)
 
+  s.pod_target_xcconfig = {
+    'OTHER_CPLUSPLUSFLAGS' => '-O3 -ffast-math'
+  }
+
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'
   install_modules_dependencies(s)

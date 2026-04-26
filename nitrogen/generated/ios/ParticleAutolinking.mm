@@ -7,10 +7,11 @@
 
 #import <Foundation/Foundation.h>
 #import <NitroModules/HybridObjectRegistry.hpp>
-
+#import "Particle-Swift-Cxx-Umbrella.hpp"
 #import <type_traits>
 
 #include "HybridParticleEngine.hpp"
+#include "HybridParticleCanvasViewSpecSwift.hpp"
 
 @interface ParticleAutolinking : NSObject
 @end
@@ -28,6 +29,13 @@
                     "The HybridObject \"HybridParticleEngine\" is not default-constructible! "
                     "Create a public constructor that takes zero arguments to be able to autolink this HybridObject.");
       return std::make_shared<HybridParticleEngine>();
+    }
+  );
+  HybridObjectRegistry::registerHybridObjectConstructor(
+    "ParticleCanvasView",
+    []() -> std::shared_ptr<HybridObject> {
+      std::shared_ptr<HybridParticleCanvasViewSpec> hybridObject = Particle::ParticleAutolinking::createParticleCanvasView();
+      return hybridObject;
     }
   );
 }
