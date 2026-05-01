@@ -16,7 +16,7 @@
 
 ### Particle quality
 
-- [ ] **Per-particle rotation + spin** — Each particle has a `rotation` angle and `spinVelocity` (deg/s). Needed for non-circle shapes (sparks, leaf, debris). Requires passing rotation in the flat buffer and drawing rotated rects/paths in the native renderers.
+- [x] **Per-particle rotation + spin** — Each particle has a `rotation` angle and `spinVelocity` (deg/s). Needed for non-circle shapes (sparks, leaf, debris). Requires passing rotation in the flat buffer and drawing rotated rects/paths in the native renderers.
 - [ ] **Color midpoint** — A third `colorMid` + `colorMidPoint` (0–1) field in `PresetConfig` for tri-color gradients. Enables effects like fire (black → orange → yellow) or plasma (blue → white → cyan) without two separate emitters.
 - [ ] **Turbulence / noise force** — Per-frame random force (`turbulenceX`, `turbulenceY` in px/s²) applied to each particle. Makes smoke and ember feel organic instead of ballistic. Can be implemented as a per-frame `_randRange(-t, t)` added to velocity before drag.
 - [ ] **Size curve (easing)** — Replace the linear lerp between `sizeStart` and `sizeEnd` with a configurable easing (`sizeEase: 'linear' | 'easeIn' | 'easeOut' | 'pulse'`). A `pulse` curve (small → big → small) enables bubbles, breath, and impact rings.
