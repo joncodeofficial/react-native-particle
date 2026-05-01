@@ -15,23 +15,11 @@
       "require": "./lib/commonjs/index.js",
       "types": "./lib/typescript/src/index.d.ts"
     },
-    "./adapters/view": {
-      "react-native": "./src/adapters/ViewAdapter",
-      "import": "./lib/module/adapters/ViewAdapter.js",
-      "require": "./lib/commonjs/adapters/ViewAdapter.js",
-      "types": "./lib/typescript/src/adapters/ViewAdapter.d.ts"
-    },
     "./adapters/skia": {
       "react-native": "./src/adapters/SkiaAdapter",
       "import": "./lib/module/adapters/SkiaAdapter.js",
       "require": "./lib/commonjs/adapters/SkiaAdapter.js",
       "types": "./lib/typescript/src/adapters/SkiaAdapter.d.ts"
-    },
-    "./adapters/reanimated": {
-      "react-native": "./src/adapters/ReanimatedAdapter",
-      "import": "./lib/module/adapters/ReanimatedAdapter.js",
-      "require": "./lib/commonjs/adapters/ReanimatedAdapter.js",
-      "types": "./lib/typescript/src/adapters/ReanimatedAdapter.d.ts"
     }
   },
   "scripts": {
