@@ -1,13 +1,9 @@
 export { ParticleSystem } from './ParticleSystem'
-export type { ParticleSystemProps, PresetName } from './ParticleSystem'
+export type { ParticleSystemProps } from './ParticleSystem'
 export type { AdapterProps } from './adapters/types'
 export type { ParticleEngine } from './specs/ParticleEngine.nitro'
+export type { PresetName, PresetConfig, EmitterConfig } from './types'
 
-// Adapters — also exported from the main entry for local development.
-// In production (npm install) prefer the subpath imports for tree-shaking:
-//   import { ViewAdapter } from 'react-native-particle/adapters/view'
-export { ViewAdapter } from './adapters/ViewAdapter'
 export { SkiaAdapter } from './adapters/SkiaAdapter'
-export { ReanimatedAdapter } from './adapters/ReanimatedAdapter'
 export { NativeParticleSystem } from './adapters/NativeCanvasAdapter'
 export type { NativeCanvasProps } from './adapters/NativeCanvasAdapter'

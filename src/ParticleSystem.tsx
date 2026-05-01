@@ -5,11 +5,15 @@ import { NitroModules } from 'react-native-nitro-modules'
 import type { AdapterProps } from './adapters/types'
 import { ViewAdapter } from './adapters/ViewAdapter'
 import type { ParticleEngine } from './specs/ParticleEngine.nitro'
+import type { PresetName, PresetConfig } from './types'
 
-export type PresetName = 'confetti' | 'fire' | 'explosion'
+export type { PresetName }
+
+const resolvePreset = (p: PresetName | PresetConfig): string =>
+  typeof p === 'string' ? p : JSON.stringify(p)
 
 export interface ParticleSystemProps {
-  preset: PresetName
+  preset: PresetName | PresetConfig
   count?: number
   /** Emission X — defaults to horizontal center */
   x?: number
@@ -43,8 +47,10 @@ export function ParticleSystem({
     const e = NitroModules.createHybridObject<ParticleEngine>('ParticleEngine')
     e.initialize(MAX_PARTICLES, width, height)
 
+    const presetStr = resolvePreset(preset)
+
     if (autoPlay) {
-      e.emit(x ?? width / 2, y ?? height / 2, count, preset)
+      e.emit(x ?? width / 2, y ?? height / 2, count, presetStr)
       e.play()
     }
 
@@ -53,7 +59,7 @@ export function ParticleSystem({
     let interval: ReturnType<typeof setInterval> | undefined
     if (loop) {
       interval = setInterval(() => {
-        e.emit(x ?? width / 2, y ?? height / 2, count, preset)
+        e.emit(x ?? width / 2, y ?? height / 2, count, presetStr)
       }, emitInterval)
     }
 

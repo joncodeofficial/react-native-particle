@@ -1,6 +1,8 @@
 #include "ParticleEngineCore.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include "json.hpp"
 
 namespace margelo::nitro::particle
 {
@@ -47,34 +49,37 @@ namespace margelo::nitro::particle
         .vxMin = -200.0f, .vxMax = 200.0f,
         .vyMin = -500.0f, .vyMax = -150.0f,
         .ax = 0.0f,       .ay = 380.0f,
-        .drag = 0.985f,
+        .dampingVelocity = 0.985f,
         .sizeStart = 10.0f, .sizeEnd = 8.0f,
         .lifetimeMin = 1.5f, .lifetimeMax = 3.2f,
         .rStart = 1, .gStart = 0, .bStart = 0.5f, .aStart = 1.0f,
         .rEnd = 1,   .gEnd = 0,   .bEnd = 0.5f,   .aEnd = 0.0f,
         .randomColor = true,
+        .emitRadius = 0.0f,
     };
     _presets["fire"] = {
         .vxMin = -35.0f, .vxMax = 35.0f,
         .vyMin = -190.0f, .vyMax = -60.0f,
         .ax = 0.0f,      .ay = -15.0f,
-        .drag = 0.972f,
+        .dampingVelocity = 0.972f,
         .sizeStart = 18.0f, .sizeEnd = 0.0f,
         .lifetimeMin = 0.45f, .lifetimeMax = 1.1f,
         .rStart = 1.0f, .gStart = 0.55f, .bStart = 0.1f, .aStart = 0.9f,
         .rEnd = 0.45f,  .gEnd = 0.0f,   .bEnd = 0.0f,   .aEnd = 0.0f,
         .randomColor = false,
+        .emitRadius = 0.0f,
     };
     _presets["explosion"] = {
         .vxMin = -420.0f, .vxMax = 420.0f,
         .vyMin = -420.0f, .vyMax = 420.0f,
         .ax = 0.0f,       .ay = 160.0f,
-        .drag = 0.92f,
+        .dampingVelocity = 0.92f,
         .sizeStart = 12.0f, .sizeEnd = 0.0f,
         .lifetimeMin = 0.25f, .lifetimeMax = 0.8f,
         .rStart = 1.0f, .gStart = 0.88f, .bStart = 0.3f, .aStart = 1.0f,
         .rEnd = 0.85f,  .gEnd = 0.2f,   .bEnd = 0.0f,   .aEnd = 0.0f,
         .randomColor = false,
+        .emitRadius = 0.0f,
     };
   }
 
@@ -96,11 +101,19 @@ namespace margelo::nitro::particle
     _active[i] = 1;
     _aliveIndices.push_back(i);
 
-    _x[i] = x;        _y[i] = y;
+    float spawnX = x, spawnY = y;
+    if (p.emitRadius > 0.0f) {
+      float angle  = _randRange(0.0f, 6.2831853f);
+      float radius = p.emitRadius * std::sqrt(_randRange(0.0f, 1.0f));
+      spawnX = x + radius * std::cos(angle);
+      spawnY = y + radius * std::sin(angle);
+    }
+
+    _x[i] = spawnX;   _y[i] = spawnY;
     _vx[i] = _randRange(p.vxMin, p.vxMax);
     _vy[i] = _randRange(p.vyMin, p.vyMax);
     _ax[i] = p.ax;    _ay[i] = p.ay;
-    _drag[i] = p.drag;
+    _drag[i] = p.dampingVelocity;
     _sizeInit[i] = p.sizeStart; _sizeEnd[i] = p.sizeEnd;
     _age[i] = 0.0f;
     _lifetime[i] = _randRange(p.lifetimeMin, p.lifetimeMax);
@@ -135,10 +148,63 @@ namespace margelo::nitro::particle
 
   void ParticleEngineCore::emit(float x, float y, int count, const std::string& preset)
   {
-    auto it = _presets.find(preset);
-    if (it == _presets.end()) return;
+    const PresetConfig* cfg = nullptr;
+
+    if (!preset.empty() && preset.front() == '{') {
+      if (preset != _lastCustomPresetJson) {
+        _cachedCustomPreset   = _parsePresetJson(preset);
+        _lastCustomPresetJson = preset;
+      }
+      cfg = &_cachedCustomPreset;
+    } else {
+      auto it = _presets.find(preset);
+      if (it == _presets.end()) return;
+      cfg = &it->second;
+    }
+
     for (int i = 0; i < count; i++)
-      _spawnParticle(x, y, it->second);
+      _spawnParticle(x, y, *cfg);
+  }
+
+  PresetConfig ParticleEngineCore::_parsePresetJson(const std::string& jsonStr)
+  {
+    using J = nlohmann::json;
+    auto j = J::parse(jsonStr, nullptr, false);
+
+    PresetConfig cfg{};
+    if (j.contains("velocityX") && j["velocityX"].is_array()) {
+      cfg.vxMin = j["velocityX"][0].get<float>();
+      cfg.vxMax = j["velocityX"][1].get<float>();
+    }
+    if (j.contains("velocityY") && j["velocityY"].is_array()) {
+      cfg.vyMin = j["velocityY"][0].get<float>();
+      cfg.vyMax = j["velocityY"][1].get<float>();
+    }
+    cfg.ax              = j.value("accelerationX",   0.0f);
+    cfg.ay              = j.value("accelerationY",   0.0f);
+    cfg.dampingVelocity = j.value("dampingVelocity", 1.0f);
+    cfg.sizeStart       = j.value("sizeStart",        8.0f);
+    cfg.sizeEnd         = j.value("sizeEnd",           0.0f);
+    cfg.lifetimeMin     = j.value("lifetimeMin",       0.5f);
+    cfg.lifetimeMax     = j.value("lifetimeMax",       1.5f);
+    cfg.emitRadius      = j.value("emitRadius",        0.0f);
+    cfg.randomColor     = j.value("randomColor",      false);
+
+    if (j.contains("colorStart") && j["colorStart"].is_array()) {
+      cfg.rStart = j["colorStart"][0].get<float>();
+      cfg.gStart = j["colorStart"][1].get<float>();
+      cfg.bStart = j["colorStart"][2].get<float>();
+      cfg.aStart = j["colorStart"][3].get<float>();
+    } else { cfg.rStart = 1.0f; cfg.gStart = 1.0f; cfg.bStart = 1.0f; cfg.aStart = 1.0f; }
+
+    if (j.contains("colorEnd") && j["colorEnd"].is_array()) {
+      cfg.rEnd = j["colorEnd"][0].get<float>();
+      cfg.gEnd = j["colorEnd"][1].get<float>();
+      cfg.bEnd = j["colorEnd"][2].get<float>();
+      cfg.aEnd = j["colorEnd"][3].get<float>();
+    } else { cfg.rEnd = 1.0f; cfg.gEnd = 1.0f; cfg.bEnd = 1.0f; cfg.aEnd = 0.0f; }
+
+    return cfg;
   }
 
   void ParticleEngineCore::step(double dt)

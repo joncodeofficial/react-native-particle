@@ -13,12 +13,13 @@ namespace margelo::nitro::particle
     float vxMin, vxMax;
     float vyMin, vyMax;
     float ax, ay;
-    float drag;
+    float dampingVelocity;
     float sizeStart, sizeEnd;
     float lifetimeMin, lifetimeMax;
     float rStart, gStart, bStart, aStart;
     float rEnd, gEnd, bEnd, aEnd;
     bool randomColor;
+    float emitRadius;
   };
 
   // Pure C++ physics — no Nitro, no JNI, no JSI.
@@ -62,9 +63,13 @@ namespace margelo::nitro::particle
     std::unordered_map<std::string, PresetConfig> _presets;
     std::mt19937 _rng;
 
+    std::string _lastCustomPresetJson;
+    PresetConfig _cachedCustomPreset{};
+
     void _initPresets();
     void _spawnParticle(float x, float y, const PresetConfig& p);
     float _randRange(float lo, float hi);
+    PresetConfig _parsePresetJson(const std::string& json);
   };
 
 } // namespace margelo::nitro::particle
