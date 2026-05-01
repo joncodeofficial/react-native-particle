@@ -38,6 +38,13 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
     }
   }
 
+  private func parseShape() -> String {
+    guard preset.hasPrefix("{") else { return "circle" }
+    if preset.contains("\"shape\":\"rect\"") { return "rect" }
+    if preset.contains("\"shape\":\"line\"") { return "line" }
+    return "circle"
+  }
+
   private func setupEngine(size: CGSize) {
     guard size.width > 0, size.height > 0 else { return }
 
@@ -53,6 +60,7 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
     engine.play()
 
     drawView.engine = engine
+    drawView.particleShape = parseShape()
     initialized = true
     startLoop()
   }
@@ -107,6 +115,7 @@ final class ParticleDrawView: UIView {
 
   var engine: ParticleEngineCoreBridge?
   var particleCount: Int32 = 0
+  var particleShape: String = "circle"
   var onSizeChange: ((CGSize) -> Void)?
 
   override init(frame: CGRect) {
@@ -130,17 +139,36 @@ final class ParticleDrawView: UIView {
           particleCount > 0 else { return }
 
     for i in 0..<Int(particleCount) {
-      let o = i * 7
-      let x    = CGFloat(ptr[o])
-      let y    = CGFloat(ptr[o + 1])
-      let size = CGFloat(ptr[o + 2])
-      let r    = CGFloat(ptr[o + 3])
-      let g    = CGFloat(ptr[o + 4])
-      let b    = CGFloat(ptr[o + 5])
-      let a    = CGFloat(ptr[o + 6])
+      let o        = i * 8
+      let x        = CGFloat(ptr[o])
+      let y        = CGFloat(ptr[o + 1])
+      let size     = CGFloat(ptr[o + 2])
+      let r        = CGFloat(ptr[o + 3])
+      let g        = CGFloat(ptr[o + 4])
+      let b        = CGFloat(ptr[o + 5])
+      let a        = CGFloat(ptr[o + 6])
+      let rotation = CGFloat(ptr[o + 7])
 
       ctx.setFillColor(red: r, green: g, blue: b, alpha: a)
-      ctx.fillEllipse(in: CGRect(x: x - size / 2, y: y - size / 2, width: size, height: size))
+
+      switch particleShape {
+      case "rect":
+        ctx.saveGState()
+        ctx.translateBy(x: x, y: y)
+        ctx.rotate(by: rotation)
+        let half = size / 2
+        ctx.fill(CGRect(x: -half, y: -half, width: size, height: size))
+        ctx.restoreGState()
+      case "line":
+        ctx.saveGState()
+        ctx.translateBy(x: x, y: y)
+        ctx.rotate(by: rotation)
+        let w = size * 3, h = size * 0.4
+        ctx.fill(CGRect(x: -w / 2, y: -h / 2, width: w, height: h))
+        ctx.restoreGState()
+      default:
+        ctx.fillEllipse(in: CGRect(x: x - size / 2, y: y - size / 2, width: size, height: size))
+      }
     }
   }
 }

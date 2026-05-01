@@ -71,11 +71,13 @@ export function ParticleSystem({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const shape = typeof preset === 'object' ? preset.shape : undefined
+
   if (!engine) return null
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <AdapterComponent engine={engine} width={width} height={height} />
+      <AdapterComponent engine={engine} width={width} height={height} shape={shape} />
     </View>
   )
 }

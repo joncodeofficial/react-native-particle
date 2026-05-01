@@ -43,6 +43,15 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
   private var floatBuffer: FloatBuffer? = null
   private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
   private var initialized = false
+  private var drawShape: String = "circle"
+
+  private fun parseShape() {
+    drawShape = when {
+      preset.contains("\"shape\":\"rect\"") -> "rect"
+      preset.contains("\"shape\":\"line\"") -> "line"
+      else -> "circle"
+    }
+  }
 
   // ─── Choreographer loop ─────────────────────────────────────────────────────
 
@@ -84,6 +93,7 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
     val cy = if (emitterY == 0.0) h / 2 else emitterY.toFloat()
     nativeEmit(enginePtr, cx, cy, count.toInt(), preset)
     nativePlay(enginePtr)
+    parseShape()
 
     initialized = true
     start()
@@ -110,16 +120,36 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
     fb.rewind()
 
     repeat(particleCount) { i ->
-      val o = i * 7
-      val x    = fb[o]
-      val y    = fb[o + 1]
-      val size = fb[o + 2]
-      val r    = (fb[o + 3] * 255f).toInt()
-      val g    = (fb[o + 4] * 255f).toInt()
-      val b    = (fb[o + 5] * 255f).toInt()
-      val a    = (fb[o + 6] * 255f).toInt()
-      paint.color = Color.argb(a, r, g, b)
-      canvas.drawCircle(x, y, size / 2f, paint)
+      val o        = i * 8
+      val x        = fb[o]
+      val y        = fb[o + 1]
+      val size     = fb[o + 2]
+      val r        = (fb[o + 3] * 255f).toInt()
+      val g        = (fb[o + 4] * 255f).toInt()
+      val b        = (fb[o + 5] * 255f).toInt()
+      val a        = (fb[o + 6] * 255f).toInt()
+      val rotation = fb[o + 7]
+      paint.color  = Color.argb(a, r, g, b)
+      when (drawShape) {
+        "rect" -> {
+          canvas.save()
+          canvas.translate(x, y)
+          canvas.rotate(rotation * (180f / Math.PI.toFloat()))
+          val half = size / 2f
+          canvas.drawRect(-half, -half, half, half, paint)
+          canvas.restore()
+        }
+        "line" -> {
+          canvas.save()
+          canvas.translate(x, y)
+          canvas.rotate(rotation * (180f / Math.PI.toFloat()))
+          val w = size * 3f
+          val h = size * 0.4f
+          canvas.drawRect(-w / 2f, -h / 2f, w / 2f, h / 2f, paint)
+          canvas.restore()
+        }
+        else -> canvas.drawCircle(x, y, size / 2f, paint)
+      }
     }
   }
 

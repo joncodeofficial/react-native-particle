@@ -10,10 +10,11 @@ interface Particle {
   g: number
   b: number
   a: number
+  rotation: number
 }
 
 // Suitable for < 100 particles. No extra dependencies.
-export function ViewAdapter({ engine, width, height }: AdapterProps) {
+export function ViewAdapter({ engine, width, height, shape = 'circle' }: AdapterProps) {
   const [particles, setParticles] = useState<Particle[]>([])
   const lastTimeRef = useRef(0)
 
@@ -30,11 +31,11 @@ export function ViewAdapter({ engine, width, height }: AdapterProps) {
 
       const count = engine.particleCount
       const buf = engine.getParticlesFlat()
-      const flat = new Float32Array(buf, 0, count * 7)
+      const flat = new Float32Array(buf, 0, count * 8)
 
       const parsed: Particle[] = []
       for (let i = 0; i < count; i++) {
-        const o = i * 7
+        const o = i * 8
         parsed.push({
           x: flat[o]!,
           y: flat[o + 1]!,
@@ -43,6 +44,7 @@ export function ViewAdapter({ engine, width, height }: AdapterProps) {
           g: flat[o + 4]!,
           b: flat[o + 5]!,
           a: flat[o + 6]!,
+          rotation: flat[o + 7]!,
         })
       }
 
@@ -59,20 +61,25 @@ export function ViewAdapter({ engine, width, height }: AdapterProps) {
       style={{ position: 'absolute', width, height, overflow: 'hidden' }}
       pointerEvents="none"
     >
-      {particles.map((p, i) => (
-        <View
-          key={i}
-          style={{
-            position: 'absolute',
-            left: p.x - p.size / 2,
-            top: p.y - p.size / 2,
-            width: p.size,
-            height: p.size,
-            borderRadius: p.size / 2,
-            backgroundColor: `rgba(${Math.round(p.r * 255)},${Math.round(p.g * 255)},${Math.round(p.b * 255)},${p.a})`,
-          }}
-        />
-      ))}
+      {particles.map((p, i) => {
+        const w = shape === 'line' ? p.size * 3 : p.size
+        const h = shape === 'line' ? p.size * 0.4 : p.size
+        return (
+          <View
+            key={i}
+            style={{
+              position: 'absolute',
+              left: p.x - w / 2,
+              top: p.y - h / 2,
+              width: w,
+              height: h,
+              borderRadius: shape === 'circle' ? p.size / 2 : 0,
+              backgroundColor: `rgba(${Math.round(p.r * 255)},${Math.round(p.g * 255)},${Math.round(p.b * 255)},${p.a})`,
+              transform: [{ rotate: `${p.rotation}rad` }],
+            }}
+          />
+        )
+      })}
     </View>
   )
 }

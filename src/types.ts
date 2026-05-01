@@ -34,6 +34,18 @@ export interface PresetConfig {
    * de este radio centrado en la posición del emisor. Default 0 (emisor puntual).
    */
   emitRadius?: number
+  /**
+   * Rotación inicial en grados [min, max]. Default [0, 0].
+   * Cuando rotationMin/Max o spinMin/Max son distintos de 0, las partículas
+   * se renderizan como cuadrados en lugar de círculos.
+   */
+  rotationMin?: number
+  rotationMax?: number
+  /** Velocidad angular en grados/s [min, max]. Default [0, 0]. */
+  spinMin?: number
+  spinMax?: number
+  /** Forma de cada partícula. Default 'circle'. */
+  shape?: 'circle' | 'rect' | 'line'
 }
 
 export interface EmitterConfig {
