@@ -2,7 +2,6 @@
 
 #include <random>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace margelo::nitro::particle
@@ -20,6 +19,8 @@ namespace margelo::nitro::particle
     float rEnd, gEnd, bEnd, aEnd;
     bool randomColor;
     float emitRadius;
+    float rotationMin, rotationMax; // degrees
+    float spinMin, spinMax;         // degrees/s
   };
 
   // Pure C++ physics — no Nitro, no JNI, no JSI.
@@ -55,18 +56,17 @@ namespace margelo::nitro::particle
     std::vector<float> _rInit, _gInit, _bInit, _aInit;
     std::vector<float> _rEnd, _gEnd, _bEnd, _aEnd;
     std::vector<float> _age, _lifetime;
+    std::vector<float> _rotation, _spin; // radians, radians/s
     std::vector<uint8_t> _active;
     std::vector<int> _aliveIndices;
     std::vector<int> _freeSlots;
-    std::vector<float> _particleData; // output: maxParticles * 7 floats, pre-allocated
+    std::vector<float> _particleData; // output: maxParticles * 8 floats [x,y,size,r,g,b,a,rotation]
 
-    std::unordered_map<std::string, PresetConfig> _presets;
     std::mt19937 _rng;
 
     std::string _lastCustomPresetJson;
     PresetConfig _cachedCustomPreset{};
 
-    void _initPresets();
     void _spawnParticle(float x, float y, const PresetConfig& p);
     float _randRange(float lo, float hi);
     PresetConfig _parsePresetJson(const std::string& json);

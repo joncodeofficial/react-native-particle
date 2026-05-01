@@ -58,7 +58,7 @@ Java_com_margelo_nitro_particle_HybridParticleCanvasView_nativeGetBuffer(JNIEnv*
   auto* core = reinterpret_cast<Core*>(ptr);
   return env->NewDirectByteBuffer(
     core->getParticleDataPtr(),
-    static_cast<jlong>(core->getMaxParticles()) * 7 * sizeof(float)
+    static_cast<jlong>(core->getMaxParticles()) * 8 * sizeof(float)
   );
 }
 

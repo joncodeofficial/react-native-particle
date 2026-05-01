@@ -28,59 +28,19 @@ namespace margelo::nitro::particle
     alloc(_rInit);  alloc(_gInit);  alloc(_bInit);  alloc(_aInit);
     alloc(_rEnd);   alloc(_gEnd);   alloc(_bEnd);   alloc(_aEnd);
     alloc(_age);    alloc(_lifetime);
+    alloc(_rotation); alloc(_spin);
     _active.assign(_maxParticles, 0);
 
     _aliveIndices.clear();
     _aliveIndices.reserve(_maxParticles);
     _freeSlots.clear();
     _freeSlots.reserve(_maxParticles);
-    _particleData.assign(static_cast<size_t>(_maxParticles) * 7, 0.0f);
+    _particleData.assign(static_cast<size_t>(_maxParticles) * 8, 0.0f);
 
     for (int i = _maxParticles - 1; i >= 0; --i)
       _freeSlots.push_back(i);
 
     _rng.seed(std::random_device{}());
-    _initPresets();
-  }
-
-  void ParticleEngineCore::_initPresets()
-  {
-    _presets["confetti"] = {
-        .vxMin = -200.0f, .vxMax = 200.0f,
-        .vyMin = -500.0f, .vyMax = -150.0f,
-        .ax = 0.0f,       .ay = 380.0f,
-        .dampingVelocity = 0.985f,
-        .sizeStart = 10.0f, .sizeEnd = 8.0f,
-        .lifetimeMin = 1.5f, .lifetimeMax = 3.2f,
-        .rStart = 1, .gStart = 0, .bStart = 0.5f, .aStart = 1.0f,
-        .rEnd = 1,   .gEnd = 0,   .bEnd = 0.5f,   .aEnd = 0.0f,
-        .randomColor = true,
-        .emitRadius = 0.0f,
-    };
-    _presets["fire"] = {
-        .vxMin = -35.0f, .vxMax = 35.0f,
-        .vyMin = -190.0f, .vyMax = -60.0f,
-        .ax = 0.0f,      .ay = -15.0f,
-        .dampingVelocity = 0.972f,
-        .sizeStart = 18.0f, .sizeEnd = 0.0f,
-        .lifetimeMin = 0.45f, .lifetimeMax = 1.1f,
-        .rStart = 1.0f, .gStart = 0.55f, .bStart = 0.1f, .aStart = 0.9f,
-        .rEnd = 0.45f,  .gEnd = 0.0f,   .bEnd = 0.0f,   .aEnd = 0.0f,
-        .randomColor = false,
-        .emitRadius = 0.0f,
-    };
-    _presets["explosion"] = {
-        .vxMin = -420.0f, .vxMax = 420.0f,
-        .vyMin = -420.0f, .vyMax = 420.0f,
-        .ax = 0.0f,       .ay = 160.0f,
-        .dampingVelocity = 0.92f,
-        .sizeStart = 12.0f, .sizeEnd = 0.0f,
-        .lifetimeMin = 0.25f, .lifetimeMax = 0.8f,
-        .rStart = 1.0f, .gStart = 0.88f, .bStart = 0.3f, .aStart = 1.0f,
-        .rEnd = 0.85f,  .gEnd = 0.2f,   .bEnd = 0.0f,   .aEnd = 0.0f,
-        .randomColor = false,
-        .emitRadius = 0.0f,
-    };
   }
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -115,6 +75,9 @@ namespace margelo::nitro::particle
     _ax[i] = p.ax;    _ay[i] = p.ay;
     _drag[i] = p.dampingVelocity;
     _sizeInit[i] = p.sizeStart; _sizeEnd[i] = p.sizeEnd;
+    static constexpr float kDegToRad = 3.14159265f / 180.0f;
+    _rotation[i] = _randRange(p.rotationMin, p.rotationMax) * kDegToRad;
+    _spin[i]     = _randRange(p.spinMin,     p.spinMax)     * kDegToRad;
     _age[i] = 0.0f;
     _lifetime[i] = _randRange(p.lifetimeMin, p.lifetimeMax);
 
@@ -148,22 +111,15 @@ namespace margelo::nitro::particle
 
   void ParticleEngineCore::emit(float x, float y, int count, const std::string& preset)
   {
-    const PresetConfig* cfg = nullptr;
+    if (preset.empty() || preset.front() != '{') return;
 
-    if (!preset.empty() && preset.front() == '{') {
-      if (preset != _lastCustomPresetJson) {
-        _cachedCustomPreset   = _parsePresetJson(preset);
-        _lastCustomPresetJson = preset;
-      }
-      cfg = &_cachedCustomPreset;
-    } else {
-      auto it = _presets.find(preset);
-      if (it == _presets.end()) return;
-      cfg = &it->second;
+    if (preset != _lastCustomPresetJson) {
+      _cachedCustomPreset   = _parsePresetJson(preset);
+      _lastCustomPresetJson = preset;
     }
 
     for (int i = 0; i < count; i++)
-      _spawnParticle(x, y, *cfg);
+      _spawnParticle(x, y, _cachedCustomPreset);
   }
 
   PresetConfig ParticleEngineCore::_parsePresetJson(const std::string& jsonStr)
@@ -189,6 +145,10 @@ namespace margelo::nitro::particle
     cfg.lifetimeMax     = j.value("lifetimeMax",       1.5f);
     cfg.emitRadius      = j.value("emitRadius",        0.0f);
     cfg.randomColor     = j.value("randomColor",      false);
+    cfg.rotationMin     = j.value("rotationMin",       0.0f);
+    cfg.rotationMax     = j.value("rotationMax",       0.0f);
+    cfg.spinMin         = j.value("spinMin",           0.0f);
+    cfg.spinMax         = j.value("spinMax",           0.0f);
 
     if (j.contains("colorStart") && j["colorStart"].is_array()) {
       cfg.rStart = j["colorStart"][0].get<float>();
@@ -227,6 +187,7 @@ namespace margelo::nitro::particle
       _vy[i] = (_vy[i] + _ay[i] * fdt) * _drag[i];
       _x[i] += _vx[i] * fdt;
       _y[i] += _vy[i] * fdt;
+      _rotation[i] += _spin[i] * fdt;
     }
 
     _aliveIndices.erase(
@@ -251,7 +212,8 @@ namespace margelo::nitro::particle
       dst[4] = lerp(_gInit[i], _gEnd[i], t);
       dst[5] = lerp(_bInit[i], _bEnd[i], t);
       dst[6] = lerp(_aInit[i], _aEnd[i], t);
-      dst += 7;
+      dst[7] = _rotation[i];
+      dst += 8;
     }
 
     return alive;

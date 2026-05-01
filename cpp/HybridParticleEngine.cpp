@@ -23,7 +23,7 @@ namespace margelo::nitro::particle
   {
     int count = _core.fillParticleData();
     auto* ptr = reinterpret_cast<uint8_t*>(_core.getParticleDataPtr());
-    size_t byteSize = static_cast<size_t>(count) * 7 * sizeof(float);
+    size_t byteSize = static_cast<size_t>(count) * 8 * sizeof(float);
     // Wrap C++ memory — no data copy, no heap alloc. Core outlives this buffer.
     return ArrayBuffer::wrap(ptr, byteSize, []() {});
   }
