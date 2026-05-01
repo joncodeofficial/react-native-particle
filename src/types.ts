@@ -25,6 +25,10 @@ export interface PresetConfig {
   lifetimeMax?: number
   /** Color RGBA al nacer. Componentes 0–1. Default [1,1,1,1]. */
   colorStart?: [number, number, number, number]
+  /** Color RGBA intermedio. Habilita gradientes tricolores (ej. negro → naranja → amarillo). */
+  colorMid?: [number, number, number, number]
+  /** Posición normalizada (0–1) del color medio dentro de la vida de la partícula. Default 0.5. */
+  colorMidPoint?: number
   /** Color RGBA al morir. Componentes 0–1. Default [1,1,1,0]. */
   colorEnd?: [number, number, number, number]
   /** Si true, cada partícula elige un hue aleatorio ignorando colorStart/colorEnd. */

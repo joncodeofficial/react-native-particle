@@ -101,6 +101,23 @@ const spark: PresetConfig = {
   emitRadius: 5,
 };
 
+// Fuego — llama tricolor: negro → naranja → amarillo (colorMid)
+const fire: PresetConfig = {
+  velocityX: [-35, 35],
+  velocityY: [-180, -60],
+  accelerationY: -8,
+  dampingVelocity: 0.970,
+  sizeStart: 22,
+  sizeEnd: 0,
+  lifetimeMin: 1.0,
+  lifetimeMax: 2.2,
+  colorStart: [0.05, 0.02, 0.0, 1.0],
+  colorMid: [1.0, 0.35, 0.0, 1.0],
+  colorMidPoint: 0.35,
+  colorEnd: [1.0, 0.95, 0.2, 0.0],
+  emitRadius: 14,
+};
+
 // Lluvia de meteoros — diagonal rápida desde arriba
 const meteor: PresetConfig = {
   velocityX: [280, 480],
@@ -189,14 +206,14 @@ export default function App() {
         emitInterval={600}
       />
 
-      {/* Sparks — abajo derecha, cuadrados rotando */}
+      {/* Fuego — abajo derecha, llama tricolor */}
       <NativeParticleSystem
-        preset={spark}
-        count={80}
+        preset={fire}
+        count={30}
         x={col2}
         y={row3}
         loop
-        emitInterval={300}
+        emitInterval={120}
       />
 
       <FPSMeter />

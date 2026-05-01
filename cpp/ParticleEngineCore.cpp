@@ -26,7 +26,9 @@ namespace margelo::nitro::particle
     alloc(_drag);
     alloc(_sizeInit); alloc(_sizeEnd);
     alloc(_rInit);  alloc(_gInit);  alloc(_bInit);  alloc(_aInit);
+    alloc(_rMid);   alloc(_gMid);   alloc(_bMid);   alloc(_aMid);
     alloc(_rEnd);   alloc(_gEnd);   alloc(_bEnd);   alloc(_aEnd);
+    alloc(_colorMidPoint);
     alloc(_age);    alloc(_lifetime);
     alloc(_rotation); alloc(_spin);
     _active.assign(_maxParticles, 0);
@@ -99,11 +101,14 @@ namespace margelo::nitro::particle
       _aInit[i] = p.aStart;
       _rEnd[i] = _rInit[i]; _gEnd[i] = _gInit[i];
       _bEnd[i] = _bInit[i]; _aEnd[i] = 0.0f;
+      _colorMidPoint[i] = -1.0f;
     }
     else
     {
       _rInit[i]=p.rStart; _gInit[i]=p.gStart; _bInit[i]=p.bStart; _aInit[i]=p.aStart;
-      _rEnd[i]=p.rEnd;    _gEnd[i]=p.gEnd;    _bEnd[i]=p.bEnd;    _aEnd[i]=p.aEnd;
+      _rMid[i] =p.rMid;   _gMid[i] =p.gMid;   _bMid[i] =p.bMid;   _aMid[i] =p.aMid;
+      _rEnd[i] =p.rEnd;   _gEnd[i] =p.gEnd;   _bEnd[i] =p.bEnd;   _aEnd[i] =p.aEnd;
+      _colorMidPoint[i] = p.colorMidPoint;
     }
   }
 
@@ -157,6 +162,15 @@ namespace margelo::nitro::particle
       cfg.aStart = j["colorStart"][3].get<float>();
     } else { cfg.rStart = 1.0f; cfg.gStart = 1.0f; cfg.bStart = 1.0f; cfg.aStart = 1.0f; }
 
+    cfg.colorMidPoint = -1.0f;
+    if (j.contains("colorMid") && j["colorMid"].is_array()) {
+      cfg.rMid = j["colorMid"][0].get<float>();
+      cfg.gMid = j["colorMid"][1].get<float>();
+      cfg.bMid = j["colorMid"][2].get<float>();
+      cfg.aMid = j["colorMid"][3].get<float>();
+      cfg.colorMidPoint = j.value("colorMidPoint", 0.5f);
+    }
+
     if (j.contains("colorEnd") && j["colorEnd"].is_array()) {
       cfg.rEnd = j["colorEnd"][0].get<float>();
       cfg.gEnd = j["colorEnd"][1].get<float>();
@@ -208,10 +222,28 @@ namespace margelo::nitro::particle
       dst[0] = _x[i];
       dst[1] = _y[i];
       dst[2] = lerp(_sizeInit[i], _sizeEnd[i], t);
-      dst[3] = lerp(_rInit[i], _rEnd[i], t);
-      dst[4] = lerp(_gInit[i], _gEnd[i], t);
-      dst[5] = lerp(_bInit[i], _bEnd[i], t);
-      dst[6] = lerp(_aInit[i], _aEnd[i], t);
+      float mp = _colorMidPoint[i];
+      if (mp >= 0.0f) {
+        float t2 = (t < mp)
+          ? (mp > 0.0f ? t / mp : 0.0f)
+          : (mp < 1.0f ? (t - mp) / (1.0f - mp) : 1.0f);
+        if (t < mp) {
+          dst[3] = lerp(_rInit[i], _rMid[i], t2);
+          dst[4] = lerp(_gInit[i], _gMid[i], t2);
+          dst[5] = lerp(_bInit[i], _bMid[i], t2);
+          dst[6] = lerp(_aInit[i], _aMid[i], t2);
+        } else {
+          dst[3] = lerp(_rMid[i], _rEnd[i], t2);
+          dst[4] = lerp(_gMid[i], _gEnd[i], t2);
+          dst[5] = lerp(_bMid[i], _bEnd[i], t2);
+          dst[6] = lerp(_aMid[i], _aEnd[i], t2);
+        }
+      } else {
+        dst[3] = lerp(_rInit[i], _rEnd[i], t);
+        dst[4] = lerp(_gInit[i], _gEnd[i], t);
+        dst[5] = lerp(_bInit[i], _bEnd[i], t);
+        dst[6] = lerp(_aInit[i], _aEnd[i], t);
+      }
       dst[7] = _rotation[i];
       dst += 8;
     }

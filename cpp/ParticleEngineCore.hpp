@@ -16,7 +16,9 @@ namespace margelo::nitro::particle
     float sizeStart, sizeEnd;
     float lifetimeMin, lifetimeMax;
     float rStart, gStart, bStart, aStart;
-    float rEnd, gEnd, bEnd, aEnd;
+    float rMid,   gMid,   bMid,   aMid;
+    float rEnd,   gEnd,   bEnd,   aEnd;
+    float colorMidPoint; // -1 = no mid color; 0–1 = piecewise breakpoint
     bool randomColor;
     float emitRadius;
     float rotationMin, rotationMax; // degrees
@@ -54,7 +56,9 @@ namespace margelo::nitro::particle
     std::vector<float> _drag;
     std::vector<float> _sizeInit, _sizeEnd;
     std::vector<float> _rInit, _gInit, _bInit, _aInit;
-    std::vector<float> _rEnd, _gEnd, _bEnd, _aEnd;
+    std::vector<float> _rMid,  _gMid,  _bMid,  _aMid;
+    std::vector<float> _rEnd,  _gEnd,  _bEnd,  _aEnd;
+    std::vector<float> _colorMidPoint;
     std::vector<float> _age, _lifetime;
     std::vector<float> _rotation, _spin; // radians, radians/s
     std::vector<uint8_t> _active;
