@@ -5,7 +5,9 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
 
   // ─── Props ──────────────────────────────────────────────────────────────────
 
-  var preset: String = "fire"
+  var preset: String = "" {
+    didSet { drawView.particleShape = parseShape() }
+  }
   var count: Double = 200
   var emitterX: Double = 0
   var emitterY: Double = 0

@@ -30,7 +30,8 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
 
   // ─── Props ──────────────────────────────────────────────────────────────────
 
-  override var preset: String = "fire"
+  override var preset: String = ""
+    set(value) { field = value; parseShape() }
   override var count: Double = 200.0
   override var emitterX: Double = 0.0
   override var emitterY: Double = 0.0
