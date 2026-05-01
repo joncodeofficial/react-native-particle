@@ -4,7 +4,7 @@
 
 - [ ] **onComplete callback** — Detect `particleCount === 0` inside the renderer loop and invoke the `onComplete` prop.
 - [ ] **Imperative ref API** — Expose `play()`, `pause()`, `reset()`, and `emit()` via `useImperativeHandle` so effects can be triggered programmatically.
-- [ ] **Custom preset API** — Accept a full `PresetConfig` object as the `preset` prop instead of only named strings.
+- [x] **Custom preset API** — Accept a full `PresetConfig` object as the `preset` prop instead of only named strings.
 - [ ] **Preset overrides** — Accept an `overrides` prop to patch individual fields of a built-in preset (e.g. `overrides={{ colorStart: '#00aaff' }}`).
 - [ ] **Preset: snow** — Slow drifting flakes with slight horizontal oscillation.
 - [ ] **Preset: rain** — Fast vertical drops with narrow horizontal spread.
@@ -13,6 +13,16 @@
 - [ ] **Preset: bubbles** — Rising soft circles that fade out at the top.
 - [ ] **Preset: fireworks** — Upward burst that spawns a secondary radial explosion at peak height.
 - [ ] **Renderer count warnings** — Warn in dev mode when `count` exceeds the practical limit for the selected renderer.
+
+### Particle quality
+
+- [ ] **Per-particle rotation + spin** — Each particle has a `rotation` angle and `spinVelocity` (deg/s). Needed for non-circle shapes (sparks, leaf, debris). Requires passing rotation in the flat buffer and drawing rotated rects/paths in the native renderers.
+- [ ] **Color midpoint** — A third `colorMid` + `colorMidPoint` (0–1) field in `PresetConfig` for tri-color gradients. Enables effects like fire (black → orange → yellow) or plasma (blue → white → cyan) without two separate emitters.
+- [ ] **Turbulence / noise force** — Per-frame random force (`turbulenceX`, `turbulenceY` in px/s²) applied to each particle. Makes smoke and ember feel organic instead of ballistic. Can be implemented as a per-frame `_randRange(-t, t)` added to velocity before drag.
+- [ ] **Size curve (easing)** — Replace the linear lerp between `sizeStart` and `sizeEnd` with a configurable easing (`sizeEase: 'linear' | 'easeIn' | 'easeOut' | 'pulse'`). A `pulse` curve (small → big → small) enables bubbles, breath, and impact rings.
+- [ ] **Opacity curve (independent)** — Separate alpha track from color. `alphaStart`, `alphaEnd`, and an `alphaEase` field so color and opacity can evolve at different rates (e.g. color stays constant while alpha pulses).
+- [ ] **Blend mode hint** — A `blendMode: 'normal' | 'additive'` field passed to the native renderer. Additive blending makes electric, fire, and magic effects glow instead of occluding each other. Currently all particles are drawn with standard alpha blend.
+- [ ] **Emission shape** — `emitShape: 'point' | 'circle' | 'ring' | 'line'` with corresponding dimensions. A `ring` (fixed radius, not filled) produces halo and shockwave effects. A `line` enables waterfall, rain wall, and horizon effects.
 
 ---
 
