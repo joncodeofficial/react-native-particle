@@ -9,6 +9,14 @@ namespace margelo::nitro::particle
 
   static inline float lerp(float a, float b, float t) { return a + (b - a) * t; }
   static inline float clamp01(float v) { return v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v); }
+  static inline auto parseEmitShape(const std::string& shape)
+  {
+    using EmitShape = PresetConfig::EmitShape;
+    if (shape == "circle") return EmitShape::Circle;
+    if (shape == "ring") return EmitShape::Ring;
+    if (shape == "line") return EmitShape::Line;
+    return EmitShape::Point;
+  }
 
   // ─── Lifecycle ──────────────────────────────────────────────────────────────
 
@@ -23,6 +31,7 @@ namespace margelo::nitro::particle
     alloc(_x);      alloc(_y);
     alloc(_vx);     alloc(_vy);
     alloc(_ax);     alloc(_ay);
+    alloc(_turbulenceX); alloc(_turbulenceY);
     alloc(_drag);
     alloc(_sizeInit); alloc(_sizeEnd);
     alloc(_rInit);  alloc(_gInit);  alloc(_bInit);  alloc(_aInit);
@@ -64,17 +73,42 @@ namespace margelo::nitro::particle
     _aliveIndices.push_back(i);
 
     float spawnX = x, spawnY = y;
-    if (p.emitRadius > 0.0f) {
-      float angle  = _randRange(0.0f, 6.2831853f);
-      float radius = p.emitRadius * std::sqrt(_randRange(0.0f, 1.0f));
-      spawnX = x + radius * std::cos(angle);
-      spawnY = y + radius * std::sin(angle);
+    switch (p.emitShape) {
+    case PresetConfig::EmitShape::Circle: {
+      if (p.emitRadius > 0.0f) {
+        float angle  = _randRange(0.0f, 6.2831853f);
+        float radius = p.emitRadius * std::sqrt(_randRange(0.0f, 1.0f));
+        spawnX = x + radius * std::cos(angle);
+        spawnY = y + radius * std::sin(angle);
+      }
+      break;
+    }
+    case PresetConfig::EmitShape::Ring: {
+      if (p.emitRadius > 0.0f) {
+        float angle = _randRange(0.0f, 6.2831853f);
+        spawnX = x + p.emitRadius * std::cos(angle);
+        spawnY = y + p.emitRadius * std::sin(angle);
+      }
+      break;
+    }
+    case PresetConfig::EmitShape::Line: {
+      float halfWidth = p.emitWidth * 0.5f;
+      float halfHeight = p.emitHeight * 0.5f;
+      spawnX = x + _randRange(-halfWidth, halfWidth);
+      spawnY = y + _randRange(-halfHeight, halfHeight);
+      break;
+    }
+    case PresetConfig::EmitShape::Point:
+    default:
+      break;
     }
 
     _x[i] = spawnX;   _y[i] = spawnY;
     _vx[i] = _randRange(p.vxMin, p.vxMax);
     _vy[i] = _randRange(p.vyMin, p.vyMax);
     _ax[i] = p.ax;    _ay[i] = p.ay;
+    _turbulenceX[i] = p.turbulenceX;
+    _turbulenceY[i] = p.turbulenceY;
     _drag[i] = p.dampingVelocity;
     _sizeInit[i] = p.sizeStart; _sizeEnd[i] = p.sizeEnd;
     static constexpr float kDegToRad = 3.14159265f / 180.0f;
@@ -143,12 +177,19 @@ namespace margelo::nitro::particle
     }
     cfg.ax              = j.value("accelerationX",   0.0f);
     cfg.ay              = j.value("accelerationY",   0.0f);
+    cfg.turbulenceX     = j.value("turbulenceX",     0.0f);
+    cfg.turbulenceY     = j.value("turbulenceY",     0.0f);
     cfg.dampingVelocity = j.value("dampingVelocity", 1.0f);
     cfg.sizeStart       = j.value("sizeStart",        8.0f);
     cfg.sizeEnd         = j.value("sizeEnd",           0.0f);
     cfg.lifetimeMin     = j.value("lifetimeMin",       0.5f);
     cfg.lifetimeMax     = j.value("lifetimeMax",       1.5f);
     cfg.emitRadius      = j.value("emitRadius",        0.0f);
+    cfg.emitWidth       = j.value("emitWidth",         0.0f);
+    cfg.emitHeight      = j.value("emitHeight",        0.0f);
+    cfg.emitShape       = parseEmitShape(
+      j.value("emitShape", cfg.emitRadius > 0.0f ? std::string("circle") : std::string("point"))
+    );
     cfg.randomColor     = j.value("randomColor",      false);
     cfg.rotationMin     = j.value("rotationMin",       0.0f);
     cfg.rotationMax     = j.value("rotationMax",       0.0f);
@@ -197,8 +238,10 @@ namespace margelo::nitro::particle
         _freeSlots.push_back(i);
         continue;
       }
-      _vx[i] = (_vx[i] + _ax[i] * fdt) * _drag[i];
-      _vy[i] = (_vy[i] + _ay[i] * fdt) * _drag[i];
+      float turbulenceX = _randRange(-_turbulenceX[i], _turbulenceX[i]);
+      float turbulenceY = _randRange(-_turbulenceY[i], _turbulenceY[i]);
+      _vx[i] = (_vx[i] + (_ax[i] + turbulenceX) * fdt) * _drag[i];
+      _vy[i] = (_vy[i] + (_ay[i] + turbulenceY) * fdt) * _drag[i];
       _x[i] += _vx[i] * fdt;
       _y[i] += _vy[i] * fdt;
       _rotation[i] += _spin[i] * fdt;

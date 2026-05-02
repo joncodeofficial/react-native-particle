@@ -10,6 +10,7 @@ const snow: PresetConfig = {
   velocityX: [-22, 22],
   velocityY: [18, 48],
   accelerationY: 4,
+  turbulenceX: 10,
   dampingVelocity: 0.998,
   sizeStart: 6,
   sizeEnd: 4,
@@ -17,7 +18,9 @@ const snow: PresetConfig = {
   lifetimeMax: 8.5,
   colorStart: [0.96, 0.98, 1.0, 0.9],
   colorEnd: [0.96, 0.98, 1.0, 0.0],
-  emitRadius: 54,
+  emitShape: 'line',
+  emitWidth: 120,
+  emitHeight: 20,
 };
 
 const fire: PresetConfig = {
@@ -40,6 +43,8 @@ const smoke: PresetConfig = {
   velocityX: [-18, 18],
   velocityY: [-55, -18],
   accelerationY: -3,
+  turbulenceX: 22,
+  turbulenceY: 12,
   dampingVelocity: 0.989,
   sizeStart: 18,
   sizeEnd: 56,
@@ -63,18 +68,25 @@ const sparkles: PresetConfig = {
   emitRadius: 12,
 };
 
-const bubbles: PresetConfig = {
-  velocityX: [-26, 26],
-  velocityY: [-140, -70],
-  accelerationY: -6,
-  dampingVelocity: 0.993,
-  sizeStart: 10,
-  sizeEnd: 22,
+const confetti: PresetConfig = {
+  velocityX: [-180, 180],
+  velocityY: [-260, -120],
+  accelerationY: 240,
+  turbulenceX: 24,
+  dampingVelocity: 0.985,
+  sizeStart: 9,
+  sizeEnd: 7,
   lifetimeMin: 1.8,
-  lifetimeMax: 3.2,
-  colorStart: [0.55, 0.9, 1.0, 0.35],
-  colorEnd: [0.8, 0.97, 1.0, 0.0],
-  emitRadius: 12,
+  lifetimeMax: 2.8,
+  randomColor: true,
+  shape: 'rect',
+  rotationMin: -180,
+  rotationMax: 180,
+  spinMin: -540,
+  spinMax: 540,
+  emitShape: 'line',
+  emitWidth: 80,
+  emitHeight: 10,
 };
 
 // Approximation for the current engine. A true secondary burst belongs in the core.
@@ -138,7 +150,7 @@ export default function App() {
     {
       key: 'snow',
       label: 'snow',
-      caption: 'soft drift',
+      caption: 'line emitter drift',
       preset: snow,
       count: 20,
       emitInterval: 380,
@@ -159,7 +171,7 @@ export default function App() {
     {
       key: 'smoke',
       label: 'smoke',
-      caption: 'slow grey plumes',
+      caption: 'soft turbulence plume',
       preset: smoke,
       count: 14,
       emitInterval: 520,
@@ -177,14 +189,15 @@ export default function App() {
       y: middle,
     },
     {
-      key: 'bubbles',
-      label: 'bubbles',
-      caption: 'rising soft circles',
-      preset: bubbles,
-      count: 10,
-      emitInterval: 420,
+      key: 'confetti',
+      label: 'confetti',
+      caption: 'foreground celebration',
+      preset: confetti,
+      count: 22,
+      emitInterval: 520,
       x: left,
       y: bottom,
+      layer: 'foreground',
     },
     {
       key: 'fireworks',

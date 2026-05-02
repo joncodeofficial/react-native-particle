@@ -9,6 +9,10 @@ export interface PresetConfig {
   accelerationX?: number
   /** Aceleración vertical constante en px/s² (gravedad). Default 0. */
   accelerationY?: number
+  /** Fuerza aleatoria horizontal por frame en px/s². Default 0. */
+  turbulenceX?: number
+  /** Fuerza aleatoria vertical por frame en px/s². Default 0. */
+  turbulenceY?: number
   /**
    * Multiplicador de velocidad por frame (0–1).
    * 1.0 = sin fricción · 0.95 = fricción ligera · 0.90 = fricción fuerte.
@@ -33,11 +37,17 @@ export interface PresetConfig {
   colorEnd?: [number, number, number, number]
   /** Si true, cada partícula elige un hue aleatorio ignorando colorStart/colorEnd. */
   randomColor?: boolean
+  /** Forma geométrica del emisor. Default 'point'. */
+  emitShape?: 'point' | 'circle' | 'ring' | 'line'
   /**
-   * Radio de emisión en px. Las partículas nacen dentro de un disco
-   * de este radio centrado en la posición del emisor. Default 0 (emisor puntual).
+   * Radio de emisión en px. Se usa para `circle` y `ring`.
+   * Si se pasa sin `emitShape`, se mantiene compatibilidad y se interpreta como `circle`.
    */
   emitRadius?: number
+  /** Ancho del emisor en px. Se usa principalmente para `line`. */
+  emitWidth?: number
+  /** Alto del emisor en px. Se usa principalmente para `line`. */
+  emitHeight?: number
   /**
    * Rotación inicial en grados [min, max]. Default [0, 0].
    * Cuando rotationMin/Max o spinMin/Max son distintos de 0, las partículas

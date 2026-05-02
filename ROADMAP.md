@@ -10,11 +10,11 @@
 
 - [x] **Per-particle rotation + spin** — Each particle has a `rotation` angle and `spinVelocity` (deg/s). Needed for non-circle shapes (sparks, leaf, debris). Requires passing rotation in the flat buffer and drawing rotated rects/paths in the native renderers.
 - [x] **Color midpoint** — A third `colorMid` + `colorMidPoint` (0–1) field in `PresetConfig` for tri-color gradients. Enables effects like fire (black → orange → yellow) or plasma (blue → white → cyan) without two separate emitters.
-- [ ] **Turbulence / noise force** — Per-frame random force (`turbulenceX`, `turbulenceY` in px/s²) applied to each particle. Makes smoke and ember feel organic instead of ballistic. Can be implemented as a per-frame `_randRange(-t, t)` added to velocity before drag.
+- [x] **Turbulence / noise force** — Per-frame random force (`turbulenceX`, `turbulenceY` in px/s²) applied to each particle. Makes smoke and ember feel organic instead of ballistic. Can be implemented as a per-frame `_randRange(-t, t)` added to velocity before drag.
 - [ ] **Size curve (easing)** — Replace the linear lerp between `sizeStart` and `sizeEnd` with a configurable easing (`sizeEase: 'linear' | 'easeIn' | 'easeOut' | 'pulse'`). A `pulse` curve (small → big → small) enables bubbles, breath, and impact rings.
 - [ ] **Opacity curve (independent)** — Separate alpha track from color. `alphaStart`, `alphaEnd`, and an `alphaEase` field so color and opacity can evolve at different rates (e.g. color stays constant while alpha pulses).
 - [ ] **Blend mode hint** — A `blendMode: 'normal' | 'additive'` field passed to the native renderer. Additive blending makes electric, fire, and magic effects glow instead of occluding each other. Currently all particles are drawn with standard alpha blend.
-- [ ] **Emission shape** — `emitShape: 'point' | 'circle' | 'ring' | 'line'` with corresponding dimensions. A `ring` (fixed radius, not filled) produces halo and shockwave effects. A `line` enables waterfall, rain wall, and horizon effects.
+- [x] **Emission shape** — `emitShape: 'point' | 'circle' | 'ring' | 'line'` with corresponding dimensions. A `ring` (fixed radius, not filled) produces halo and shockwave effects. A `line` enables waterfall, rain wall, and horizon effects.
 
 ---
 

@@ -9,9 +9,18 @@ namespace margelo::nitro::particle
 
   struct PresetConfig
   {
+    enum class EmitShape
+    {
+      Point = 0,
+      Circle = 1,
+      Ring = 2,
+      Line = 3,
+    };
+
     float vxMin, vxMax;
     float vyMin, vyMax;
     float ax, ay;
+    float turbulenceX, turbulenceY;
     float dampingVelocity;
     float sizeStart, sizeEnd;
     float lifetimeMin, lifetimeMax;
@@ -20,7 +29,9 @@ namespace margelo::nitro::particle
     float rEnd,   gEnd,   bEnd,   aEnd;
     float colorMidPoint; // -1 = no mid color; 0–1 = piecewise breakpoint
     bool randomColor;
+    EmitShape emitShape;
     float emitRadius;
+    float emitWidth, emitHeight;
     float rotationMin, rotationMax; // degrees
     float spinMin, spinMax;         // degrees/s
   };
@@ -53,6 +64,7 @@ namespace margelo::nitro::particle
     std::vector<float> _x, _y;
     std::vector<float> _vx, _vy;
     std::vector<float> _ax, _ay;
+    std::vector<float> _turbulenceX, _turbulenceY;
     std::vector<float> _drag;
     std::vector<float> _sizeInit, _sizeEnd;
     std::vector<float> _rInit, _gInit, _bInit, _aInit;
