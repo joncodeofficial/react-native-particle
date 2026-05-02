@@ -1,5 +1,6 @@
 import React from 'react'
 import { StyleSheet } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
 import { getHostComponent } from 'react-native-nitro-modules'
 import viewConfig from '../../nitrogen/generated/shared/json/ParticleCanvasViewConfig.json'
 import type { PresetName, PresetConfig } from '../types'
@@ -26,7 +27,20 @@ export interface NativeCanvasProps {
   y?: number
   loop?: boolean
   emitInterval?: number
+  /** Semantic stacking hint. `style.zIndex` overrides this when provided. */
+  layer?: 'background' | 'foreground'
+  /** Advanced host-view override. Can be used to customize zIndex, opacity or layout. */
+  style?: StyleProp<ViewStyle>
 }
+
+const layerStyles = StyleSheet.create({
+  background: {
+    zIndex: 0,
+  },
+  foreground: {
+    zIndex: 1000,
+  },
+})
 
 export function NativeParticleSystem({
   preset,
@@ -35,6 +49,8 @@ export function NativeParticleSystem({
   y = 0,
   loop = false,
   emitInterval = 200,
+  layer = 'background',
+  style,
 }: NativeCanvasProps) {
   const presetStr = typeof preset === 'string' ? preset : JSON.stringify(preset)
   return (
@@ -45,7 +61,11 @@ export function NativeParticleSystem({
       emitterY={y}
       loop={loop}
       emitInterval={emitInterval}
-      style={StyleSheet.absoluteFill}
+      style={[
+        StyleSheet.absoluteFill,
+        layer === 'foreground' ? layerStyles.foreground : layerStyles.background,
+        style,
+      ]}
     />
   )
 }

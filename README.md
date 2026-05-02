@@ -46,10 +46,18 @@ import { NativeParticleSystem } from 'react-native-particle'
   count={400}
   x={200}
   y={600}
+  layer="foreground"
   loop
   emitInterval={200}
 />
 ```
+
+`layer` controls the default stacking order:
+
+- `background` draws behind sibling UI
+- `foreground` draws in front of sibling UI
+
+You can also pass `style` for advanced host-view overrides. If `style` includes a `zIndex`, it overrides the default provided by `layer`.
 
 ## Presets
 

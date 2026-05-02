@@ -30,7 +30,7 @@ export default function FPSMeter() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>ViewAdapter</Text>
+      <Text style={styles.label}>NativeParticleSystem</Text>
       <Text style={[styles.fps, { color }]}>{fps} FPS</Text>
     </View>
   );

@@ -15,6 +15,7 @@ import java.nio.FloatBuffer
 @Keep
 @DoNotStrip
 class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec() {
+  private val density = context.resources.displayMetrics.density
 
   // ─── Inner drawing View ─────────────────────────────────────────────────────
 
@@ -83,15 +84,17 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
   // ─── Setup ──────────────────────────────────────────────────────────────────
 
   private fun setupEngine(w: Float, h: Float) {
-    nativeInitialize(enginePtr, MAX_PARTICLES, w, h)
+    val logicalWidth = w / density
+    val logicalHeight = h / density
+    nativeInitialize(enginePtr, MAX_PARTICLES, logicalWidth, logicalHeight)
 
     // Get direct ByteBuffer pointing to C++ memory — cached once, never reallocated
     val buf = nativeGetBuffer(enginePtr)
     buf.order(ByteOrder.nativeOrder())
     floatBuffer = buf.asFloatBuffer()
 
-    val cx = if (emitterX == 0.0) w / 2 else emitterX.toFloat()
-    val cy = if (emitterY == 0.0) h / 2 else emitterY.toFloat()
+    val cx = if (emitterX == 0.0) logicalWidth / 2f else emitterX.toFloat()
+    val cy = if (emitterY == 0.0) logicalHeight / 2f else emitterY.toFloat()
     nativeEmit(enginePtr, cx, cy, count.toInt(), preset)
     nativePlay(enginePtr)
     parseShape()
@@ -122,9 +125,9 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
 
     repeat(particleCount) { i ->
       val o        = i * 8
-      val x        = fb[o]
-      val y        = fb[o + 1]
-      val size     = fb[o + 2]
+      val x        = fb[o] * density
+      val y        = fb[o + 1] * density
+      val size     = fb[o + 2] * density
       val r        = (fb[o + 3] * 255f).toInt()
       val g        = (fb[o + 4] * 255f).toInt()
       val b        = (fb[o + 5] * 255f).toInt()
