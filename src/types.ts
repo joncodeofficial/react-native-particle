@@ -23,6 +23,8 @@ export interface PresetConfig {
   sizeStart?: number
   /** Tamaño de la partícula al morir en px lógicos. Default 0. */
   sizeEnd?: number
+  /** Curva temporal para el tamaño. Default 'linear'. */
+  sizeEase?: 'linear' | 'easeIn' | 'easeOut' | 'pulse'
   /** Vida mínima en segundos. Default 0.5. */
   lifetimeMin?: number
   /** Vida máxima en segundos. Default 1.5. */

@@ -16,6 +16,13 @@ namespace margelo::nitro::particle
       Ring = 2,
       Line = 3,
     };
+    enum class CurveEase
+    {
+      Linear = 0,
+      EaseIn = 1,
+      EaseOut = 2,
+      Pulse = 3,
+    };
 
     float vxMin, vxMax;
     float vyMin, vyMax;
@@ -32,6 +39,7 @@ namespace margelo::nitro::particle
     EmitShape emitShape;
     float emitRadius;
     float emitWidth, emitHeight;
+    CurveEase sizeEase;
     float rotationMin, rotationMax; // degrees
     float spinMin, spinMax;         // degrees/s
   };
@@ -67,6 +75,7 @@ namespace margelo::nitro::particle
     std::vector<float> _turbulenceX, _turbulenceY;
     std::vector<float> _drag;
     std::vector<float> _sizeInit, _sizeEnd;
+    std::vector<uint8_t> _sizeEase;
     std::vector<float> _rInit, _gInit, _bInit, _aInit;
     std::vector<float> _rMid,  _gMid,  _bMid,  _aMid;
     std::vector<float> _rEnd,  _gEnd,  _bEnd,  _aEnd;

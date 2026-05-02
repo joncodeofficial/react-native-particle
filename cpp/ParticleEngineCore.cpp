@@ -9,6 +9,28 @@ namespace margelo::nitro::particle
 
   static inline float lerp(float a, float b, float t) { return a + (b - a) * t; }
   static inline float clamp01(float v) { return v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v); }
+  static inline auto parseCurveEase(const std::string& curve)
+  {
+    using CurveEase = PresetConfig::CurveEase;
+    if (curve == "easeIn") return CurveEase::EaseIn;
+    if (curve == "easeOut") return CurveEase::EaseOut;
+    if (curve == "pulse") return CurveEase::Pulse;
+    return CurveEase::Linear;
+  }
+  static inline float applyCurveEase(float t, PresetConfig::CurveEase ease)
+  {
+    switch (ease) {
+    case PresetConfig::CurveEase::EaseIn:
+      return t * t;
+    case PresetConfig::CurveEase::EaseOut:
+      return 1.0f - (1.0f - t) * (1.0f - t);
+    case PresetConfig::CurveEase::Pulse:
+      return std::sin(t * 3.14159265f);
+    case PresetConfig::CurveEase::Linear:
+    default:
+      return t;
+    }
+  }
   static inline auto parseEmitShape(const std::string& shape)
   {
     using EmitShape = PresetConfig::EmitShape;
@@ -34,6 +56,7 @@ namespace margelo::nitro::particle
     alloc(_turbulenceX); alloc(_turbulenceY);
     alloc(_drag);
     alloc(_sizeInit); alloc(_sizeEnd);
+    _sizeEase.assign(_maxParticles, static_cast<uint8_t>(PresetConfig::CurveEase::Linear));
     alloc(_rInit);  alloc(_gInit);  alloc(_bInit);  alloc(_aInit);
     alloc(_rMid);   alloc(_gMid);   alloc(_bMid);   alloc(_aMid);
     alloc(_rEnd);   alloc(_gEnd);   alloc(_bEnd);   alloc(_aEnd);
@@ -111,6 +134,7 @@ namespace margelo::nitro::particle
     _turbulenceY[i] = p.turbulenceY;
     _drag[i] = p.dampingVelocity;
     _sizeInit[i] = p.sizeStart; _sizeEnd[i] = p.sizeEnd;
+    _sizeEase[i] = static_cast<uint8_t>(p.sizeEase);
     static constexpr float kDegToRad = 3.14159265f / 180.0f;
     _rotation[i] = _randRange(p.rotationMin, p.rotationMax) * kDegToRad;
     _spin[i]     = _randRange(p.spinMin,     p.spinMax)     * kDegToRad;
@@ -182,6 +206,7 @@ namespace margelo::nitro::particle
     cfg.dampingVelocity = j.value("dampingVelocity", 1.0f);
     cfg.sizeStart       = j.value("sizeStart",        8.0f);
     cfg.sizeEnd         = j.value("sizeEnd",           0.0f);
+    cfg.sizeEase        = parseCurveEase(j.value("sizeEase", std::string("linear")));
     cfg.lifetimeMin     = j.value("lifetimeMin",       0.5f);
     cfg.lifetimeMax     = j.value("lifetimeMax",       1.5f);
     cfg.emitRadius      = j.value("emitRadius",        0.0f);
@@ -262,9 +287,10 @@ namespace margelo::nitro::particle
     {
       int i = _aliveIndices[k];
       float t = clamp01(_age[i] / _lifetime[i]);
+      float sizeT = applyCurveEase(t, static_cast<PresetConfig::CurveEase>(_sizeEase[i]));
       dst[0] = _x[i];
       dst[1] = _y[i];
-      dst[2] = lerp(_sizeInit[i], _sizeEnd[i], t);
+      dst[2] = lerp(_sizeInit[i], _sizeEnd[i], sizeT);
       float mp = _colorMidPoint[i];
       if (mp >= 0.0f) {
         float t2 = (t < mp)
