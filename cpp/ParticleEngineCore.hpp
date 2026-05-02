@@ -23,6 +23,11 @@ namespace margelo::nitro::particle
       EaseOut = 2,
       Pulse = 3,
     };
+    enum class BlendMode
+    {
+      Normal = 0,
+      Additive = 1,
+    };
 
     float vxMin, vxMax;
     float vyMin, vyMax;
@@ -42,6 +47,7 @@ namespace margelo::nitro::particle
     float emitRadius;
     float emitWidth, emitHeight;
     CurveEase sizeEase;
+    BlendMode blendMode;
     float rotationMin, rotationMax; // degrees
     float spinMin, spinMax;         // degrees/s
   };

@@ -45,6 +45,8 @@ export interface PresetConfig {
   alphaEase?: 'linear' | 'easeIn' | 'easeOut' | 'pulse'
   /** Si true, cada partícula elige un hue aleatorio ignorando colorStart/colorEnd. */
   randomColor?: boolean
+  /** Hint de blending nativo. Default 'normal'. */
+  blendMode?: 'normal' | 'additive'
   /** Forma geométrica del emisor. Default 'point'. */
   emitShape?: 'point' | 'circle' | 'ring' | 'line'
   /**

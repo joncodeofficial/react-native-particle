@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.view.Choreographer
 import android.view.View
 import androidx.annotation.Keep
@@ -32,7 +34,7 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
   // ─── Props ──────────────────────────────────────────────────────────────────
 
   override var preset: String = ""
-    set(value) { field = value; parseShape() }
+    set(value) { field = value; parseShape(); parseBlendMode() }
   override var count: Double = 200.0
   override var emitterX: Double = 0.0
   override var emitterY: Double = 0.0
@@ -46,6 +48,7 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
   private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
   private var initialized = false
   private var drawShape: String = "circle"
+  private var additiveBlend = false
 
   private fun parseShape() {
     drawShape = when {
@@ -53,6 +56,10 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
       preset.contains("\"shape\":\"line\"") -> "line"
       else -> "circle"
     }
+  }
+
+  private fun parseBlendMode() {
+    additiveBlend = preset.contains("\"blendMode\":\"additive\"")
   }
 
   // ─── Choreographer loop ─────────────────────────────────────────────────────
@@ -98,6 +105,7 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
     nativeEmit(enginePtr, cx, cy, count.toInt(), preset)
     nativePlay(enginePtr)
     parseShape()
+    parseBlendMode()
 
     initialized = true
     start()
@@ -122,6 +130,7 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
     val fb = floatBuffer ?: return
     val particleCount = nativeGetCount(enginePtr)
     fb.rewind()
+    paint.xfermode = if (additiveBlend) PorterDuffXfermode(PorterDuff.Mode.ADD) else null
 
     repeat(particleCount) { i ->
       val o        = i * 8

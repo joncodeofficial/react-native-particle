@@ -40,6 +40,7 @@ const fire: PresetConfig = {
   alphaStart: 0.0,
   alphaEnd: 1.0,
   alphaEase: 'pulse',
+  blendMode: 'additive',
   emitRadius: 14,
 };
 
@@ -73,6 +74,7 @@ const sparkles: PresetConfig = {
   alphaEnd: 1.0,
   alphaEase: 'pulse',
   randomColor: true,
+  blendMode: 'additive',
   emitRadius: 12,
 };
 

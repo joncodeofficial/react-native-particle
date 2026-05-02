@@ -31,6 +31,12 @@ namespace margelo::nitro::particle
       return t;
     }
   }
+  static inline auto parseBlendMode(const std::string& mode)
+  {
+    using BlendMode = PresetConfig::BlendMode;
+    if (mode == "additive") return BlendMode::Additive;
+    return BlendMode::Normal;
+  }
   static inline auto parseEmitShape(const std::string& shape)
   {
     using EmitShape = PresetConfig::EmitShape;
@@ -227,6 +233,7 @@ namespace margelo::nitro::particle
     cfg.rotationMax     = j.value("rotationMax",       0.0f);
     cfg.spinMin         = j.value("spinMin",           0.0f);
     cfg.spinMax         = j.value("spinMax",           0.0f);
+    cfg.blendMode       = parseBlendMode(j.value("blendMode", std::string("normal")));
 
     if (j.contains("colorStart") && j["colorStart"].is_array()) {
       cfg.rStart = j["colorStart"][0].get<float>();

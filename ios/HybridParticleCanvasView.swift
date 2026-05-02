@@ -6,7 +6,10 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
   // ─── Props ──────────────────────────────────────────────────────────────────
 
   var preset: String = "" {
-    didSet { drawView.particleShape = parseShape() }
+    didSet {
+      drawView.particleShape = parseShape()
+      drawView.blendMode = parseBlendMode()
+    }
   }
   var count: Double = 200
   var emitterX: Double = 0
@@ -47,6 +50,12 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
     return "circle"
   }
 
+  private func parseBlendMode() -> CGBlendMode {
+    guard preset.hasPrefix("{") else { return .normal }
+    if preset.contains("\"blendMode\":\"additive\"") { return .plusLighter }
+    return .normal
+  }
+
   private func setupEngine(size: CGSize) {
     guard size.width > 0, size.height > 0 else { return }
 
@@ -63,6 +72,7 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
 
     drawView.engine = engine
     drawView.particleShape = parseShape()
+    drawView.blendMode = parseBlendMode()
     initialized = true
     startLoop()
   }
@@ -118,6 +128,7 @@ final class ParticleDrawView: UIView {
   var engine: ParticleEngineCoreBridge?
   var particleCount: Int32 = 0
   var particleShape: String = "circle"
+  var blendMode: CGBlendMode = .normal
   var onSizeChange: ((CGSize) -> Void)?
 
   override init(frame: CGRect) {
@@ -139,6 +150,8 @@ final class ParticleDrawView: UIView {
     guard let ctx = UIGraphicsGetCurrentContext(),
           let ptr = engine?.particleDataPtr(),
           particleCount > 0 else { return }
+
+    ctx.setBlendMode(blendMode)
 
     for i in 0..<Int(particleCount) {
       let o        = i * 8
