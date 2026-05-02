@@ -34,6 +34,8 @@ namespace margelo::nitro::particle
     float rStart, gStart, bStart, aStart;
     float rMid,   gMid,   bMid,   aMid;
     float rEnd,   gEnd,   bEnd,   aEnd;
+    bool useAlphaTrack;
+    float alphaStart, alphaEnd;
     float colorMidPoint; // -1 = no mid color; 0–1 = piecewise breakpoint
     bool randomColor;
     EmitShape emitShape;
@@ -79,6 +81,9 @@ namespace margelo::nitro::particle
     std::vector<float> _rInit, _gInit, _bInit, _aInit;
     std::vector<float> _rMid,  _gMid,  _bMid,  _aMid;
     std::vector<float> _rEnd,  _gEnd,  _bEnd,  _aEnd;
+    std::vector<uint8_t> _useAlphaTrack;
+    std::vector<float> _alphaStart, _alphaEnd;
+    std::vector<uint8_t> _alphaEase;
     std::vector<float> _colorMidPoint;
     std::vector<float> _age, _lifetime;
     std::vector<float> _rotation, _spin; // radians, radians/s

@@ -60,6 +60,9 @@ namespace margelo::nitro::particle
     alloc(_rInit);  alloc(_gInit);  alloc(_bInit);  alloc(_aInit);
     alloc(_rMid);   alloc(_gMid);   alloc(_bMid);   alloc(_aMid);
     alloc(_rEnd);   alloc(_gEnd);   alloc(_bEnd);   alloc(_aEnd);
+    _useAlphaTrack.assign(_maxParticles, 0);
+    alloc(_alphaStart); alloc(_alphaEnd);
+    _alphaEase.assign(_maxParticles, static_cast<uint8_t>(PresetConfig::CurveEase::Linear));
     alloc(_colorMidPoint);
     alloc(_age);    alloc(_lifetime);
     alloc(_rotation); alloc(_spin);
@@ -168,6 +171,10 @@ namespace margelo::nitro::particle
       _rEnd[i] =p.rEnd;   _gEnd[i] =p.gEnd;   _bEnd[i] =p.bEnd;   _aEnd[i] =p.aEnd;
       _colorMidPoint[i] = p.colorMidPoint;
     }
+    _useAlphaTrack[i] = p.useAlphaTrack ? 1 : 0;
+    _alphaStart[i] = p.alphaStart;
+    _alphaEnd[i] = p.alphaEnd;
+    _alphaEase[i] = static_cast<uint8_t>(p.alphaEase);
   }
 
   // ─── Public API ─────────────────────────────────────────────────────────────
@@ -244,6 +251,11 @@ namespace margelo::nitro::particle
       cfg.aEnd = j["colorEnd"][3].get<float>();
     } else { cfg.rEnd = 1.0f; cfg.gEnd = 1.0f; cfg.bEnd = 1.0f; cfg.aEnd = 0.0f; }
 
+    cfg.useAlphaTrack = j.contains("alphaStart") || j.contains("alphaEnd") || j.contains("alphaEase");
+    cfg.alphaStart = j.value("alphaStart", cfg.aStart);
+    cfg.alphaEnd = j.value("alphaEnd", cfg.aEnd);
+    cfg.alphaEase = parseCurveEase(j.value("alphaEase", std::string("linear")));
+
     return cfg;
   }
 
@@ -312,6 +324,10 @@ namespace margelo::nitro::particle
         dst[4] = lerp(_gInit[i], _gEnd[i], t);
         dst[5] = lerp(_bInit[i], _bEnd[i], t);
         dst[6] = lerp(_aInit[i], _aEnd[i], t);
+      }
+      if (_useAlphaTrack[i] != 0) {
+        float alphaT = applyCurveEase(t, static_cast<PresetConfig::CurveEase>(_alphaEase[i]));
+        dst[6] = lerp(_alphaStart[i], _alphaEnd[i], alphaT);
       }
       dst[7] = _rotation[i];
       dst += 8;

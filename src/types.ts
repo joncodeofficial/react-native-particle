@@ -37,6 +37,12 @@ export interface PresetConfig {
   colorMidPoint?: number
   /** Color RGBA al morir. Componentes 0–1. Default [1,1,1,0]. */
   colorEnd?: [number, number, number, number]
+  /** Alpha independiente al nacer. Si se usa, separa la opacidad del track de color. */
+  alphaStart?: number
+  /** Alpha independiente al morir. Si se usa, separa la opacidad del track de color. */
+  alphaEnd?: number
+  /** Curva temporal para la opacidad independiente. Default 'linear'. */
+  alphaEase?: 'linear' | 'easeIn' | 'easeOut' | 'pulse'
   /** Si true, cada partícula elige un hue aleatorio ignorando colorStart/colorEnd. */
   randomColor?: boolean
   /** Forma geométrica del emisor. Default 'point'. */

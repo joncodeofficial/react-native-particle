@@ -37,6 +37,9 @@ const fire: PresetConfig = {
   colorMid: [1.0, 0.36, 0.02, 1.0],
   colorMidPoint: 0.34,
   colorEnd: [1.0, 0.95, 0.28, 0.0],
+  alphaStart: 0.0,
+  alphaEnd: 1.0,
+  alphaEase: 'pulse',
   emitRadius: 14,
 };
 
@@ -66,6 +69,9 @@ const sparkles: PresetConfig = {
   sizeEase: 'easeOut',
   lifetimeMin: 0.18,
   lifetimeMax: 0.45,
+  alphaStart: 0.0,
+  alphaEnd: 1.0,
+  alphaEase: 'pulse',
   randomColor: true,
   emitRadius: 12,
 };
