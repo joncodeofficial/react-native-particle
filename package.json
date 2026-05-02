@@ -14,12 +14,6 @@
       "import": "./lib/module/index.js",
       "require": "./lib/commonjs/index.js",
       "types": "./lib/typescript/src/index.d.ts"
-    },
-    "./adapters/skia": {
-      "react-native": "./src/adapters/SkiaAdapter",
-      "import": "./lib/module/adapters/SkiaAdapter.js",
-      "require": "./lib/commonjs/adapters/SkiaAdapter.js",
-      "types": "./lib/typescript/src/adapters/SkiaAdapter.d.ts"
     }
   },
   "scripts": {
