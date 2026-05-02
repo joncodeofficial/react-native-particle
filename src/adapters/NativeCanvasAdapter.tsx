@@ -21,6 +21,7 @@ const NativeParticleCanvasView = getHostComponent<
 >('ParticleCanvasView', () => viewConfig)
 
 export interface NativeCanvasProps {
+  // `preset` can stay as a named preset or a full inline config; native always receives JSON.
   preset: PresetName | PresetConfig
   count?: number
   x?: number
@@ -52,6 +53,7 @@ export function NativeParticleSystem({
   layer = 'background',
   style,
 }: NativeCanvasProps) {
+  // Keep serialization at the adapter boundary so the native views only deal with strings.
   const presetStr = typeof preset === 'string' ? preset : JSON.stringify(preset)
   return (
     <NativeParticleCanvasView
@@ -63,6 +65,7 @@ export function NativeParticleSystem({
       emitInterval={emitInterval}
       style={[
         StyleSheet.absoluteFill,
+        // Semantic layer picks a default z-order, while user-provided style remains the final escape hatch.
         layer === 'foreground' ? layerStyles.foreground : layerStyles.background,
         style,
       ]}

@@ -7,6 +7,7 @@
 namespace margelo::nitro::particle
 {
 
+  // Tiny math helpers kept local to the compilation unit because they are used in hot paths.
   static inline float lerp(float a, float b, float t) { return a + (b - a) * t; }
   static inline float clamp01(float v) { return v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v); }
   static inline auto parseCurveEase(const std::string& curve)
@@ -19,6 +20,7 @@ namespace margelo::nitro::particle
   }
   static inline float applyCurveEase(float t, PresetConfig::CurveEase ease)
   {
+    // Curves stay intentionally simple/branch-light because they run for every live particle.
     switch (ease) {
     case PresetConfig::CurveEase::EaseIn:
       return t * t;
@@ -55,6 +57,7 @@ namespace margelo::nitro::particle
     _height = height;
     _isRunning = false;
 
+    // Every simulation property gets a fixed-size backing array up front.
     auto alloc = [&](auto& v) { v.assign(_maxParticles, {}); };
     alloc(_x);      alloc(_y);
     alloc(_vx);     alloc(_vy);
@@ -80,6 +83,7 @@ namespace margelo::nitro::particle
     _freeSlots.reserve(_maxParticles);
     _particleData.assign(static_cast<size_t>(_maxParticles) * 8, 0.0f);
 
+    // Free slots are pre-seeded so spawning can pop from the back without allocation.
     for (int i = _maxParticles - 1; i >= 0; --i)
       _freeSlots.push_back(i);
 
@@ -104,6 +108,7 @@ namespace margelo::nitro::particle
     _active[i] = 1;
     _aliveIndices.push_back(i);
 
+    // Expand the emitter into a concrete spawn position before assigning velocity/state.
     float spawnX = x, spawnY = y;
     switch (p.emitShape) {
     case PresetConfig::EmitShape::Circle: {
@@ -135,6 +140,7 @@ namespace margelo::nitro::particle
       break;
     }
 
+    // Copy preset data into the slot so the step/fill loops can stay data-oriented.
     _x[i] = spawnX;   _y[i] = spawnY;
     _vx[i] = _randRange(p.vxMin, p.vxMax);
     _vy[i] = _randRange(p.vyMin, p.vyMax);
@@ -152,6 +158,7 @@ namespace margelo::nitro::particle
 
     if (p.randomColor)
     {
+      // Fast HSV-ish hue sampling to avoid storing a separate palette per particle.
       float h = _randRange(0.0f, 6.0f);
       int hi6 = static_cast<int>(h);
       float f = h - static_cast<float>(hi6);
@@ -189,6 +196,7 @@ namespace margelo::nitro::particle
   {
     if (preset.empty() || preset.front() != '{') return;
 
+    // Re-parse only when the JSON payload changes; loop emitters usually reuse the same preset.
     if (preset != _lastCustomPresetJson) {
       _cachedCustomPreset   = _parsePresetJson(preset);
       _lastCustomPresetJson = preset;
@@ -203,6 +211,7 @@ namespace margelo::nitro::particle
     using J = nlohmann::json;
     auto j = J::parse(jsonStr, nullptr, false);
 
+    // Defaults are centralized here so JS can send sparse preset objects.
     PresetConfig cfg{};
     if (j.contains("velocityX") && j["velocityX"].is_array()) {
       cfg.vxMin = j["velocityX"][0].get<float>();
@@ -272,6 +281,7 @@ namespace margelo::nitro::particle
     float fdt = static_cast<float>(dt);
     const int alive = static_cast<int>(_aliveIndices.size());
 
+    // Iterate over the dense alive list so dead slots never hit the hot loop.
     for (int k = 0; k < alive; ++k)
     {
       int i = _aliveIndices[k];
@@ -282,6 +292,7 @@ namespace margelo::nitro::particle
         _freeSlots.push_back(i);
         continue;
       }
+      // Turbulence is sampled per frame, then combined with deterministic acceleration.
       float turbulenceX = _randRange(-_turbulenceX[i], _turbulenceX[i]);
       float turbulenceY = _randRange(-_turbulenceY[i], _turbulenceY[i]);
       _vx[i] = (_vx[i] + (_ax[i] + turbulenceX) * fdt) * _drag[i];
@@ -291,6 +302,7 @@ namespace margelo::nitro::particle
       _rotation[i] += _spin[i] * fdt;
     }
 
+    // Dead particles are compacted out after the physics step so iteration stays dense.
     _aliveIndices.erase(
       std::remove_if(_aliveIndices.begin(), _aliveIndices.end(),
         [this](int i) { return _active[i] == 0; }),
@@ -302,6 +314,7 @@ namespace margelo::nitro::particle
     float* dst = _particleData.data();
     const int alive = static_cast<int>(_aliveIndices.size());
 
+    // The renderer-facing buffer is rebuilt every frame from the SoA simulation state.
     for (int k = 0; k < alive; ++k)
     {
       int i = _aliveIndices[k];
@@ -312,6 +325,7 @@ namespace margelo::nitro::particle
       dst[2] = lerp(_sizeInit[i], _sizeEnd[i], sizeT);
       float mp = _colorMidPoint[i];
       if (mp >= 0.0f) {
+        // Midpoint gradients are evaluated as two linear segments split at colorMidPoint.
         float t2 = (t < mp)
           ? (mp > 0.0f ? t / mp : 0.0f)
           : (mp < 1.0f ? (t - mp) / (1.0f - mp) : 1.0f);
@@ -333,6 +347,7 @@ namespace margelo::nitro::particle
         dst[6] = lerp(_aInit[i], _aEnd[i], t);
       }
       if (_useAlphaTrack[i] != 0) {
+        // Optional alpha track overrides the alpha coming from the color track.
         float alphaT = applyCurveEase(t, static_cast<PresetConfig::CurveEase>(_alphaEase[i]));
         dst[6] = lerp(_alphaStart[i], _alphaEnd[i], alphaT);
       }
@@ -345,6 +360,7 @@ namespace margelo::nitro::particle
 
   void ParticleEngineCore::reset()
   {
+    // Reset clears liveness and ages but keeps all fixed-capacity buffers allocated.
     std::fill(_active.begin(), _active.end(), 0);
     std::fill(_age.begin(), _age.end(), 0.0f);
     _aliveIndices.clear();

@@ -17,6 +17,7 @@ import java.nio.FloatBuffer
 @Keep
 @DoNotStrip
 class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec() {
+  // React Native passes logical coordinates; Canvas draws in physical px, so we convert at the edge.
   private val density = context.resources.displayMetrics.density
 
   // ─── Inner drawing View ─────────────────────────────────────────────────────
@@ -34,6 +35,7 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
   // ─── Props ──────────────────────────────────────────────────────────────────
 
   override var preset: String = ""
+    // The preset payload is also used to derive render-only hints such as shape/blend mode.
     set(value) { field = value; parseShape(); parseBlendMode() }
   override var count: Double = 200.0
   override var emitterX: Double = 0.0
@@ -43,6 +45,7 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
 
   // ─── C++ engine ─────────────────────────────────────────────────────────────
 
+  // Native side owns the engine pointer and exposes just enough state to the draw loop.
   private val enginePtr: Long = nativeCreate()
   private var floatBuffer: FloatBuffer? = null
   private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -71,11 +74,13 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
   private val frameCallback: Choreographer.FrameCallback = Choreographer.FrameCallback { frameNanos ->
     if (!running) return@FrameCallback
 
+    // First frame falls back to ~60 FPS so the engine always advances from a sensible dt.
     val dt = if (lastFrameNanos == 0L) 0.016
              else (frameNanos - lastFrameNanos) / 1_000_000_000.0
     lastFrameNanos = frameNanos
 
     if (loop) {
+      // Looping emitters periodically inject new particles without reallocating the native view.
       val elapsedMs = (frameNanos - emitTimerNanos) / 1_000_000L
       if (elapsedMs >= emitInterval.toLong()) {
         nativeEmit(enginePtr, emitterX.toFloat(), emitterY.toFloat(), count.toInt(), preset)
@@ -83,6 +88,7 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
       }
     }
 
+    // The C++ step also refreshes the packed buffer consumed below by drawFrame().
     nativeStep(enginePtr, dt)
     drawView.invalidate()
     Choreographer.getInstance().postFrameCallback(frameCallback)
@@ -91,15 +97,17 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
   // ─── Setup ──────────────────────────────────────────────────────────────────
 
   private fun setupEngine(w: Float, h: Float) {
+    // Simulate in logical units so JS coordinates match across Android density buckets.
     val logicalWidth = w / density
     val logicalHeight = h / density
     nativeInitialize(enginePtr, MAX_PARTICLES, logicalWidth, logicalHeight)
 
-    // Get direct ByteBuffer pointing to C++ memory — cached once, never reallocated
+    // The renderer reads C++ memory directly; no JS arrays or per-frame copies are involved.
     val buf = nativeGetBuffer(enginePtr)
     buf.order(ByteOrder.nativeOrder())
     floatBuffer = buf.asFloatBuffer()
 
+    // `0` means "center me" for fullscreen effects.
     val cx = if (emitterX == 0.0) logicalWidth / 2f else emitterX.toFloat()
     val cy = if (emitterY == 0.0) logicalHeight / 2f else emitterY.toFloat()
     nativeEmit(enginePtr, cx, cy, count.toInt(), preset)
@@ -113,6 +121,7 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
 
   private fun start() {
     if (running) return
+    // Choreographer keeps simulation and draw cadence aligned with the display refresh rate.
     running = true
     lastFrameNanos = 0L
     emitTimerNanos = 0L
@@ -130,9 +139,11 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
     val fb = floatBuffer ?: return
     val particleCount = nativeGetCount(enginePtr)
     fb.rewind()
+    // Blend mode is shared per emitter, so we set it once per frame rather than per particle.
     paint.xfermode = if (additiveBlend) PorterDuffXfermode(PorterDuff.Mode.ADD) else null
 
     repeat(particleCount) { i ->
+      // Packed layout matches ParticleEngineCore::_particleData exactly.
       val o        = i * 8
       val x        = fb[o] * density
       val y        = fb[o + 1] * density
@@ -145,6 +156,7 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
       paint.color  = Color.argb(a, r, g, b)
       when (drawShape) {
         "rect" -> {
+          // Non-circular shapes rotate around the particle center using the native rotation value.
           canvas.save()
           canvas.translate(x, y)
           canvas.rotate(rotation * (180f / Math.PI.toFloat()))
@@ -169,6 +181,7 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
   // ─── Lifecycle ──────────────────────────────────────────────────────────────
 
   override fun onDropView() {
+    // The host view lifecycle owns the native pointer and frame callback subscription.
     stop()
     nativeDestroy(enginePtr)
   }

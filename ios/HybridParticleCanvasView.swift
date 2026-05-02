@@ -7,6 +7,7 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
 
   var preset: String = "" {
     didSet {
+      // The native draw view derives lightweight render hints from the preset JSON.
       drawView.particleShape = parseShape()
       drawView.blendMode = parseBlendMode()
     }
@@ -19,6 +20,7 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
 
   // ─── Native view ────────────────────────────────────────────────────────────
 
+  // UIKit host view that paints the renderer-facing particle buffer.
   private let drawView = ParticleDrawView()
   var view: UIView { drawView }
 
@@ -38,6 +40,7 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
 
   override init() {
     super.init()
+    // Engine init is deferred until layout because we need the resolved native size.
     drawView.onSizeChange = { [weak self] size in
       self?.setupEngine(size: size)
     }
@@ -59,12 +62,14 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
   private func setupEngine(size: CGSize) {
     guard size.width > 0, size.height > 0 else { return }
 
+    // The C++ engine simulates in the same logical coordinate space as UIKit.
     engine.initialize(
       withMaxParticles: Int32(HybridParticleCanvasView.maxParticles),
       width: Float(size.width),
       height: Float(size.height)
     )
 
+    // `0` means "center me" to keep the JS API ergonomic for fullscreen effects.
     let cx = emitterX == 0 ? Float(size.width / 2) : Float(emitterX)
     let cy = emitterY == 0 ? Float(size.height / 2) : Float(emitterY)
     engine.emit(atX: cx, y: cy, count: Int32(count), preset: preset)
@@ -79,6 +84,7 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
 
   private func startLoop() {
     guard displayLink == nil else { return }
+    // CADisplayLink keeps simulation and redraw in lockstep with the screen refresh rate.
     let link = CADisplayLink(target: self, selector: #selector(tick(_:)))
     link.add(to: .main, forMode: .common)
     displayLink = link
@@ -97,6 +103,7 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
     lastTimestamp = now
 
     if loop {
+      // Looping emitters periodically inject a fresh burst without recreating the engine.
       if (now - emitTimer) * 1000 >= emitInterval {
         engine.emit(
           atX: Float(emitterX == 0 ? Double(drawView.bounds.width / 2) : emitterX),
@@ -108,6 +115,7 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
       }
     }
 
+    // Native rendering consumes the packed particle buffer rebuilt by the C++ core.
     engine.step(dt)
     engine.fillParticleData()
     drawView.particleCount = engine.aliveCount()
@@ -129,6 +137,7 @@ final class ParticleDrawView: UIView {
   var particleCount: Int32 = 0
   var particleShape: String = "circle"
   var blendMode: CGBlendMode = .normal
+  // Notifies the host wrapper when UIKit has a valid size for simulation init/re-init.
   var onSizeChange: ((CGSize) -> Void)?
 
   override init(frame: CGRect) {
@@ -151,9 +160,11 @@ final class ParticleDrawView: UIView {
           let ptr = engine?.particleDataPtr(),
           particleCount > 0 else { return }
 
+    // All particles in a view share one blend mode because it is driven by the emitter preset.
     ctx.setBlendMode(blendMode)
 
     for i in 0..<Int(particleCount) {
+      // The packed buffer layout mirrors ParticleEngineCore::_particleData.
       let o        = i * 8
       let x        = CGFloat(ptr[o])
       let y        = CGFloat(ptr[o + 1])
@@ -168,6 +179,7 @@ final class ParticleDrawView: UIView {
 
       switch particleShape {
       case "rect":
+        // Rect/line shapes rotate around the particle center using the C++ rotation value.
         ctx.saveGState()
         ctx.translateBy(x: x, y: y)
         ctx.rotate(by: rotation)

@@ -1,6 +1,7 @@
 export type PresetName = 'confetti' | 'fire' | 'explosion'
 
 export interface PresetConfig {
+  // Velocity ranges are sampled once on spawn and then evolved natively by the C++ core.
   /** Rango de velocidad horizontal [min, max] en px/s. */
   velocityX: [number, number]
   /** Rango de velocidad vertical [min, max] en px/s. */
@@ -25,6 +26,7 @@ export interface PresetConfig {
   sizeEnd?: number
   /** Curva temporal para el tamaño. Default 'linear'. */
   sizeEase?: 'linear' | 'easeIn' | 'easeOut' | 'pulse'
+  // Lifetime is normalized to 0..1 inside the native core and drives size/color/alpha tracks.
   /** Vida mínima en segundos. Default 0.5. */
   lifetimeMin?: number
   /** Vida máxima en segundos. Default 1.5. */
@@ -45,8 +47,10 @@ export interface PresetConfig {
   alphaEase?: 'linear' | 'easeIn' | 'easeOut' | 'pulse'
   /** Si true, cada partícula elige un hue aleatorio ignorando colorStart/colorEnd. */
   randomColor?: boolean
+  // Blend mode is applied per emitter by the native renderer, not per-particle in JS.
   /** Hint de blending nativo. Default 'normal'. */
   blendMode?: 'normal' | 'additive'
+  // Emission shape controls where particles spawn, separate from the visual particle `shape`.
   /** Forma geométrica del emisor. Default 'point'. */
   emitShape?: 'point' | 'circle' | 'ring' | 'line'
   /**
@@ -73,6 +77,7 @@ export interface PresetConfig {
 }
 
 export interface EmitterConfig {
+  // Reserved shape for coordinating multiple emitters from JS if a higher-level API is added later.
   id: number | string
   x: number
   y: number
