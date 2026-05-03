@@ -1,7 +1,7 @@
 {
   "name": "react-native-particle",
   "version": "0.1.0",
-  "description": "react-native-particle is a react native package built with Nitro",
+  "description": "High-performance particle system for React Native — C++ engine via Nitro Modules with zero JS overhead. Runs entirely on the UI thread using Android Canvas & iOS Core Graphics. New Architecture ready.",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
   "types": "./lib/typescript/module/src/index.d.ts",
@@ -33,7 +33,28 @@
   },
   "keywords": [
     "react-native",
-    "react-native-particle"
+    "react-native-particle",
+    "particle-system",
+    "particles",
+    "particle-effects",
+    "particle-animation",
+    "confetti",
+    "fireworks",
+    "snow",
+    "animation",
+    "visual-effects",
+    "canvas",
+    "native-rendering",
+    "react-native-skia",
+    "skia",
+    "nitro-modules",
+    "new-architecture",
+    "turbo-modules",
+    "jsi",
+    "cpp",
+    "high-performance",
+    "ios",
+    "android"
   ],
   "files": [
     "src",
@@ -133,7 +154,7 @@
     "source": "src",
     "output": "lib",
     "targets": [
-      "commonjs",
+      ["commonjs"],
       [
         "module",
         {
