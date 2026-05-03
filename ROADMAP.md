@@ -2,8 +2,13 @@
 
 ## feat
 
-- [ ] **onComplete callback** — Detect `particleCount === 0` inside the renderer loop and invoke the `onComplete` prop.
 - [ ] **Imperative ref API** — Expose `play()`, `pause()`, `reset()`, and `emit()` via `useImperativeHandle` so effects can be triggered programmatically.
+- [ ] **Chained emitters / child bursts** — Allow particles or emitters to trigger secondary emissions when they die or hit a lifecycle threshold. Needed for multi-stage fireworks, burst-after-trail effects, cascading explosions, and compound magic effects.
+- [ ] **Sprite / image particles** — Support textured particles or sprite-atlas frames in the native renderers for richer debris, embers, leaves, icons, and stylized FX beyond primitive shapes.
+- [ ] **Expanded per-particle variation** — Add spawn ranges for size/alpha/color and other authoring jitter so presets feel less uniform without requiring multiple emitters.
+- [ ] **Simple force fields** — Add built-in attractor, repulsor, vortex, and radial-force controls so developers can create less ballistic motion with a compact API.
+- [ ] **Recipe-driven docs + playground** — Publish interactive preset recipes, demos, and effect-building guides so developers can author custom looks faster.
+- [ ] **onComplete callback** — Detect `particleCount === 0` inside the renderer loop and invoke the `onComplete` prop.
 - [x] **Custom preset API** — Accept a full `PresetConfig` object as the `preset` prop instead of only named strings.
 
 ### Particle quality
@@ -17,15 +22,16 @@
 - [x] **Opacity curve (independent)** — Separate alpha track from color. `alphaStart`, `alphaEnd`, and an `alphaEase` field so color and opacity can evolve at different rates (e.g. color stays constant while alpha pulses).
 - [x] **Blend mode hint** — A `blendMode: 'normal' | 'additive'` field passed to the native renderer. Additive blending makes electric, fire, and magic effects glow instead of occluding each other. Currently all particles are drawn with standard alpha blend.
 - [x] **Emission shape** — `emitShape: 'point' | 'circle' | 'ring' | 'line'` with corresponding dimensions. A `ring` (fixed radius, not filled) produces halo and shockwave effects. A `line` enables waterfall, rain wall, and horizon effects.
-- [ ] **Chained emitters / child bursts** — Allow particles or emitters to trigger secondary emissions when they die or hit a lifecycle threshold. Needed for multi-stage fireworks, burst-after-trail effects, cascading explosions, and compound magic effects.
-
 ---
 
 ## refactor
 
+- [x] **Engine re-init on prop change** — Handle `width`/`height` changes (e.g. rotation) by calling `engine.initialize()` again instead of relying on the initial mount dimensions.
+- [x] **Declarative prop sync** — Keep `preset`, `count`, emitter position, and loop changes in sync with the native engine after mount instead of only on first render.
+- [x] **API consistency after preset removal** — Remove stale named-preset types/docs so the public API matches the current custom-preset-only implementation.
 - [ ] **Per-renderer game loop abstraction** — Extract the loop + `engine.step(dt)` call into a shared `useParticleLoop` hook consumed by all JS renderers.
+- [ ] **Preset validation + diagnostics** — Validate malformed presets and surface helpful warnings/errors instead of failing silently on invalid JSON or bad ranges.
 - [ ] **`onComplete` wiring** — Connect the `onComplete` prop through the component to the renderer loop (currently declared but never called).
-- [ ] **Engine re-init on prop change** — Handle `width`/`height` changes (e.g. rotation) by calling `engine.initialize()` again instead of relying on the initial mount dimensions.
 
 ---
 
