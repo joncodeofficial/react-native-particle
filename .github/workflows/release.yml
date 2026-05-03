@@ -1,13 +1,15 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
 
 jobs:
   release:
     name: Semantic Release
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -15,19 +17,19 @@ jobs:
       pull-requests: write
       id-token: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup
-        uses: ./.github/actions/setup
+      - uses: ./.github/actions/setup
 
-      - name: Typecheck
-        run: yarn typecheck
-
-      - name: Build library
-        run: yarn build
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: lib
+          path: lib/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Semantic Release
         env:

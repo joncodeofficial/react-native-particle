@@ -17,13 +17,11 @@ jobs:
     name: Commitlint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup
-        uses: ./.github/actions/setup
+      - uses: ./.github/actions/setup
 
       - name: Lint commit messages
         shell: bash
@@ -36,28 +34,24 @@ jobs:
             yarn commitlint --from "${{ github.event.before }}" --to "${{ github.sha }}" --verbose
           fi
 
-  typecheck:
-    name: Typecheck
+  build:
+    name: Typecheck & Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup
-        uses: ./.github/actions/setup
+      - uses: ./.github/actions/setup
 
       - name: Typecheck
         run: yarn typecheck
 
-  build-library:
-    name: Build Library
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup
-        uses: ./.github/actions/setup
-
       - name: Build
         run: yarn build
+
+      - name: Upload build artifacts
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lib
+          path: lib/
+          retention-days: 1
