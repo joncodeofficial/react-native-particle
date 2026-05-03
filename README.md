@@ -7,7 +7,7 @@ Native 2D particles for React Native with a simple preset-driven API, C++ simula
 ## Why this library
 
 - Native render path with Android Canvas and iOS Core Graphics
-- C++ simulation with preallocated buffers
+- C++ simulation with preallocated buffers and SIMD-accelerated math
 - No per-frame particle work on the JS thread
 - Preset-driven API that is easy to drop into React screens
 - Supports thousands of particles without sending frame data through JS
