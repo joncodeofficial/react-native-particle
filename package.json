@@ -19,7 +19,9 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "clean": "git clean -dfX",
+    "commitlint": "commitlint",
     "release": "semantic-release",
+    "release:dry-run": "semantic-release --dry-run",
     "build": "npm run typecheck && bob build",
     "codegen": "nitrogen --logLevel=\"debug\" && npm run build",
     "postcodegen": "npm --prefix example run pod"
@@ -62,9 +64,15 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@jamesacarr/eslint-formatter-github-actions": "^0.2.0",
     "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.6",
+    "@semantic-release/npm": "^13.1.5",
+    "@semantic-release/release-notes-generator": "^14.1.0",
     "@types/jest": "^29.5.12",
     "@types/react": "19.2.0",
     "nitrogen": "0.35.5",
