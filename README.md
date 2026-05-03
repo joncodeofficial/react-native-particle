@@ -83,7 +83,7 @@ You can also pass `style` for advanced host-view overrides. If `style` includes 
 
 ## PresetConfig
 
-`PresetConfig` controls how particles spawn, move, evolve, and blend.
+`PresetConfig` controls how particles spawn, move, evolve, and blend. Pass a plain object; the adapter serializes it to native JSON for you.
 
 ### Motion
 

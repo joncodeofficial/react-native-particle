@@ -10,12 +10,21 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
       // The native draw view derives lightweight render hints from the preset JSON.
       drawView.particleShape = parseShape()
       drawView.blendMode = parseBlendMode()
+      reseedIfNeeded()
     }
   }
-  var count: Double = 200
-  var emitterX: Double = 0
-  var emitterY: Double = 0
-  var loop: Bool = false
+  var count: Double = 200 {
+    didSet { reseedIfNeeded() }
+  }
+  var emitterX: Double = 0 {
+    didSet { reseedIfNeeded() }
+  }
+  var emitterY: Double = 0 {
+    didSet { reseedIfNeeded() }
+  }
+  var loop: Bool = false {
+    didSet { reseedIfNeeded() }
+  }
   var emitInterval: Double = 200
 
   // ─── Native view ────────────────────────────────────────────────────────────
@@ -35,6 +44,7 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
   private var lastTimestamp: CFTimeInterval = 0
   private var emitTimer: CFTimeInterval = 0
   private var initialized = false
+  private var lastSize: CGSize = .zero
 
   // ─── Setup ──────────────────────────────────────────────────────────────────
 
@@ -61,6 +71,8 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
 
   private func setupEngine(size: CGSize) {
     guard size.width > 0, size.height > 0 else { return }
+    guard size != lastSize || !initialized else { return }
+    lastSize = size
 
     // The C++ engine simulates in the same logical coordinate space as UIKit.
     engine.initialize(
@@ -69,17 +81,41 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
       height: Float(size.height)
     )
 
-    // `0` means "center me" to keep the JS API ergonomic for fullscreen effects.
-    let cx = emitterX == 0 ? Float(size.width / 2) : Float(emitterX)
-    let cy = emitterY == 0 ? Float(size.height / 2) : Float(emitterY)
-    engine.emit(atX: cx, y: cy, count: Int32(count), preset: preset)
-    engine.play()
-
+    initialized = true
     drawView.engine = engine
     drawView.particleShape = parseShape()
     drawView.blendMode = parseBlendMode()
-    initialized = true
+    syncEngineState()
     startLoop()
+  }
+
+  private func currentEmitterX() -> Float {
+    emitterX == 0 ? Float(drawView.bounds.width / 2) : Float(emitterX)
+  }
+
+  private func currentEmitterY() -> Float {
+    emitterY == 0 ? Float(drawView.bounds.height / 2) : Float(emitterY)
+  }
+
+  private func syncEngineState() {
+    guard initialized else { return }
+    engine.reset()
+    engine.emit(
+      atX: currentEmitterX(),
+      y: currentEmitterY(),
+      count: Int32(count),
+      preset: preset
+    )
+    engine.play()
+    emitTimer = 0
+    engine.fillParticleData()
+    drawView.particleCount = engine.aliveCount()
+    drawView.setNeedsDisplay()
+  }
+
+  private func reseedIfNeeded() {
+    guard initialized else { return }
+    syncEngineState()
   }
 
   private func startLoop() {
@@ -106,8 +142,8 @@ class HybridParticleCanvasView: HybridParticleCanvasViewSpec_base, HybridParticl
       // Looping emitters periodically inject a fresh burst without recreating the engine.
       if (now - emitTimer) * 1000 >= emitInterval {
         engine.emit(
-          atX: Float(emitterX == 0 ? Double(drawView.bounds.width / 2) : emitterX),
-          y: Float(emitterY == 0 ? Double(drawView.bounds.height / 2) : emitterY),
+          atX: currentEmitterX(),
+          y: currentEmitterY(),
           count: Int32(count),
           preset: preset
         )

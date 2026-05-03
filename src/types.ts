@@ -1,5 +1,3 @@
-export type PresetName = 'confetti' | 'fire' | 'explosion'
-
 export interface PresetConfig {
   // Velocity ranges are sampled once on spawn and then evolved natively by the C++ core.
   /** Rango de velocidad horizontal [min, max] en px/s. */

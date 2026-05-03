@@ -36,11 +36,32 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
 
   override var preset: String = ""
     // The preset payload is also used to derive render-only hints such as shape/blend mode.
-    set(value) { field = value; parseShape(); parseBlendMode() }
+    set(value) {
+      field = value
+      parseShape()
+      parseBlendMode()
+      reseedIfNeeded()
+    }
   override var count: Double = 200.0
+    set(value) {
+      field = value
+      reseedIfNeeded()
+    }
   override var emitterX: Double = 0.0
+    set(value) {
+      field = value
+      reseedIfNeeded()
+    }
   override var emitterY: Double = 0.0
+    set(value) {
+      field = value
+      reseedIfNeeded()
+    }
   override var loop: Boolean = false
+    set(value) {
+      field = value
+      reseedIfNeeded()
+    }
   override var emitInterval: Double = 200.0
 
   // ─── C++ engine ─────────────────────────────────────────────────────────────
@@ -52,6 +73,8 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
   private var initialized = false
   private var drawShape: String = "circle"
   private var additiveBlend = false
+  private var logicalWidth = 0f
+  private var logicalHeight = 0f
 
   private fun parseShape() {
     drawShape = when {
@@ -98,25 +121,43 @@ class HybridParticleCanvasView(context: Context) : HybridParticleCanvasViewSpec(
 
   private fun setupEngine(w: Float, h: Float) {
     // Simulate in logical units so JS coordinates match across Android density buckets.
-    val logicalWidth = w / density
-    val logicalHeight = h / density
+    logicalWidth = w / density
+    logicalHeight = h / density
     nativeInitialize(enginePtr, MAX_PARTICLES, logicalWidth, logicalHeight)
-
-    // The renderer reads C++ memory directly; no JS arrays or per-frame copies are involved.
-    val buf = nativeGetBuffer(enginePtr)
-    buf.order(ByteOrder.nativeOrder())
-    floatBuffer = buf.asFloatBuffer()
-
-    // `0` means "center me" for fullscreen effects.
-    val cx = if (emitterX == 0.0) logicalWidth / 2f else emitterX.toFloat()
-    val cy = if (emitterY == 0.0) logicalHeight / 2f else emitterY.toFloat()
-    nativeEmit(enginePtr, cx, cy, count.toInt(), preset)
-    nativePlay(enginePtr)
-    parseShape()
-    parseBlendMode()
+    if (floatBuffer == null) {
+      // The renderer reads C++ memory directly; no JS arrays or per-frame copies are involved.
+      val buf = nativeGetBuffer(enginePtr)
+      buf.order(ByteOrder.nativeOrder())
+      floatBuffer = buf.asFloatBuffer()
+    }
 
     initialized = true
+    parseShape()
+    parseBlendMode()
+    syncEngineState()
     start()
+  }
+
+  private fun currentEmitterX(): Float {
+    return if (emitterX == 0.0) logicalWidth / 2f else emitterX.toFloat()
+  }
+
+  private fun currentEmitterY(): Float {
+    return if (emitterY == 0.0) logicalHeight / 2f else emitterY.toFloat()
+  }
+
+  private fun syncEngineState() {
+    if (!initialized) return
+    nativeReset(enginePtr)
+    nativeEmit(enginePtr, currentEmitterX(), currentEmitterY(), count.toInt(), preset)
+    nativePlay(enginePtr)
+    emitTimerNanos = 0L
+    drawView.invalidate()
+  }
+
+  private fun reseedIfNeeded() {
+    if (!initialized) return
+    syncEngineState()
   }
 
   private fun start() {

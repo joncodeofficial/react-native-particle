@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { getHostComponent } from 'react-native-nitro-modules'
 import viewConfig from '../../nitrogen/generated/shared/json/ParticleCanvasViewConfig.json'
-import type { PresetName, PresetConfig } from '../types'
+import type { PresetConfig } from '../types'
 
 // Native canvas view — renders particles via Android Canvas / iOS Core Graphics.
 // No React reconciler, no shadow tree updates on the particle loop.
@@ -21,8 +21,8 @@ const NativeParticleCanvasView = getHostComponent<
 >('ParticleCanvasView', () => viewConfig)
 
 export interface NativeCanvasProps {
-  // `preset` can stay as a named preset or a full inline config; native always receives JSON.
-  preset: PresetName | PresetConfig
+  // Keep the public API declarative; native always receives a serialized preset JSON string.
+  preset: PresetConfig
   count?: number
   x?: number
   y?: number
@@ -54,7 +54,7 @@ export function NativeParticleSystem({
   style,
 }: NativeCanvasProps) {
   // Keep serialization at the adapter boundary so the native views only deal with strings.
-  const presetStr = typeof preset === 'string' ? preset : JSON.stringify(preset)
+  const presetStr = JSON.stringify(preset)
   return (
     <NativeParticleCanvasView
       preset={presetStr}
