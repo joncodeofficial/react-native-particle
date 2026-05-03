@@ -1,6 +1,6 @@
 {
   "name": "react-native-particle",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "High-performance particle system for React Native — C++ engine via Nitro Modules with zero JS overhead. Runs entirely on the UI thread using Android Canvas & iOS Core Graphics. New Architecture ready.",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
@@ -154,7 +154,9 @@
     "source": "src",
     "output": "lib",
     "targets": [
-      ["commonjs"],
+      [
+        "commonjs"
+      ],
       [
         "module",
         {
