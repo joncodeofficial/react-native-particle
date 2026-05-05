@@ -8668,18 +8668,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitrogen@npm:0.35.5":
-  version: 0.35.5
-  resolution: "nitrogen@npm:0.35.5"
+"nitrogen@npm:0.35.6":
+  version: 0.35.6
+  resolution: "nitrogen@npm:0.35.6"
   dependencies:
     chalk: "npm:^5.3.0"
-    react-native-nitro-modules: "npm:^0.35.5"
+    react-native-nitro-modules: "npm:^0.35.6"
     ts-morph: "npm:^27.0.0"
     yargs: "npm:^18.0.0"
     zod: "npm:^4.0.5"
   bin:
     nitrogen: lib/index.js
-  checksum: 10c0/16e668a6b588d3b34303e50b6bfaa3048cf668df6ef89e6997fb43468f1c8e57bfe5a089522c19172cc23bc7d20152c79c6d69d5313946d44a7af2bf488b1f80
+  checksum: 10c0/3126cee262dc908717cfba21b38250bcf658afa6586ec2b66f3f9276050bf433af66cf072b70a4fc6814b812271f32566ac639f1c3147d26c20ba71c74a9a40a
   languageName: node
   linkType: hard
 
@@ -9898,13 +9898,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-nitro-modules@npm:0.35.5, react-native-nitro-modules@npm:^0.35.5":
-  version: 0.35.5
-  resolution: "react-native-nitro-modules@npm:0.35.5"
+"react-native-nitro-modules@npm:0.35.6, react-native-nitro-modules@npm:^0.35.6":
+  version: 0.35.6
+  resolution: "react-native-nitro-modules@npm:0.35.6"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/fa6869f50345a33597b9c15aee4fa5a1c65794166946d470fad6d02d77bf467cc414934890e4e44644f2338303a4ec7b5127bf21824473e86e347aef83d20101
+  checksum: 10c0/57ec2a2d2e57da923c5c8c81d28f323691be0373d528b81a1a6e1da0e6675f29faa443cc16babd0abd4cd5e08e51ff273ed04a139f368236662212f15cc3a678
   languageName: node
   linkType: hard
 
@@ -9929,7 +9929,7 @@ __metadata:
     react-native: "npm:0.84.1"
     react-native-builder-bob: "npm:^0.40.18"
     react-native-monorepo-config: "npm:^0.3.3"
-    react-native-nitro-modules: "npm:0.35.5"
+    react-native-nitro-modules: "npm:0.35.6"
     react-native-particle: "npm:*"
     react-native-safe-area-context: "npm:^5.5.2"
   languageName: unknown
@@ -9951,11 +9951,11 @@ __metadata:
     "@types/jest": "npm:^29.5.12"
     "@types/react": "npm:19.2.0"
     conventional-changelog-conventionalcommits: "npm:^9.1.0"
-    nitrogen: "npm:0.35.5"
+    nitrogen: "npm:0.35.6"
     react: "npm:19.2.3"
     react-native: "npm:0.84.1"
     react-native-builder-bob: "npm:0.41.0"
-    react-native-nitro-modules: "npm:0.35.5"
+    react-native-nitro-modules: "npm:0.35.6"
     semantic-release: "npm:^25.0.3"
     typescript: "npm:^5.8.3"
   peerDependencies:
